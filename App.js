@@ -8,13 +8,27 @@ import { PersistGate } from "redux-persist/es/integration/react";
 import AppNavigator from "./navigation/AppNavigator";
 import HomeScreen from "./screens/HomeScreen";
 import reducers from "./src/redux/reducers";
-
+import LoginComponent from "./components/LoginComponent";
+import RouterComponent from "./RouterComponent";
 //const { persistor, store } = ConfigureStore();
 
 export default class App extends React.Component {
   state = {
     isLoadingComplete: false
   };
+
+  componentWillMount() {
+    const firebase = require("firebase");
+
+    firebase.initializeApp({
+      apiKey: "AIzaSyDaEsmd8Z8jVAEEoI0ji6QEWMchRsYm6wQ",
+      authDomain: "amfeed-cd030.firebaseapp.com",
+      databaseURL: "https://amfeed-cd030.firebaseio.com",
+      projectId: "amfeed-cd030",
+      storageBucket: "amfeed-cd030.appspot.com",
+      messagingSenderId: "912337230931"
+    });
+  }
 
   render() {
     const store = createStore(reducers, {}, applyMiddleware(ReduxThunk));
@@ -43,7 +57,7 @@ export default class App extends React.Component {
         <Provider store={store}>
           <View style={styles.container}>
             {Platform.OS === "ios" && <StatusBar barStyle="default" />}
-            <AppNavigator />
+            <RouterComponent />
           </View>
         </Provider>
       );
