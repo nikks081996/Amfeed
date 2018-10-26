@@ -1,7 +1,7 @@
-import React from "react";
-import { Scene, Router } from "react-native-router-flux";
-import LoginComponent from "./components/LoginComponent";
-import AppNavigator from "./navigation/AppNavigator";
+import React from 'react';
+import { Scene, Router } from 'react-native-router-flux';
+import LoginComponent from './components/LoginComponent';
+import AppNavigator from './navigation/AppNavigator';
 
 const RouterComponent = () => (
   <Router>
@@ -14,12 +14,7 @@ const RouterComponent = () => (
           initial
           hideNavBar
         />
-        <Scene
-          key="AppNavigator"
-          component={AppNavigator}
-          title="AppNavigator"
-          hideNavBar
-        />
+        <Scene key="AppNavigator" component={AppNavigator} title="AppNavigator" hideNavBar />
       </Scene>
     </Scene>
   </Router>

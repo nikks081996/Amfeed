@@ -1,27 +1,32 @@
 {
   "expo": {
     "name": "Amfeed",
-    "description": "A very interesting project.",
+    "description": "Feed you Need",
     "slug": "Amfeed",
     "privacy": "public",
     "sdkVersion": "30.0.0",
     "platforms": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/download.png",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/download.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "www.hunchdeveloper.com"
+    },
+    "android": {
+      "package": "www.hunchdeveloper.com"
+    },
+    "androidStatusBar": {
+      "backgroundColor": "#512DA8"
     }
   }
 }
