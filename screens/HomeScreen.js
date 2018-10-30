@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Image,
   Platform,
@@ -9,55 +9,42 @@ import {
   FlatList,
   View,
   ToastAndroid
-} from "react-native";
-import { connect } from "react-redux";
-import { Input, CheckBox, Button, Icon, Tile } from "react-native-elements";
-import {
-  SecureStore,
-  Camera,
-  Permissions,
-  ImagePicker,
-  Asset,
-  ImageManipulator
-} from "expo";
+} from 'react-native';
+import { connect } from 'react-redux';
+import RNFetchBlob from 'react-native-fetch-blob';
+import { Input, CheckBox, Button, Icon, Tile } from 'react-native-elements';
+import { SecureStore, Camera, Permissions, Asset, ImagePicker, ImageManipulator } from 'expo';
 
-import { fetchUser, addImages } from "../src/redux/Action/ActionCreators";
+import { fetchUser, addImages } from '../src/redux/Action/ActionCreators';
 
 class HomeScreen extends React.Component {
-  id = 0;
+  static navigationOptions = {
+    header: null
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      username: '',
+      password: '',
+      firstname: '',
+      lastname: '',
+      email: '',
+      remember: false
+    };
+  }
 
   componentWillMount() {
     // this.props.addImages("nikita");
     this.props.fetchUser();
   }
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      username: "",
-      password: "",
-      firstname: "",
-      lastname: "",
-      email: "",
-      remember: false
-    };
-  }
-
-  static navigationOptions = {
-    header: null
-  };
-
   getImageFromCamera = async () => {
     const cameraPermission = await Permissions.askAsync(Permissions.CAMERA);
-    const cameraRollPermission = await Permissions.askAsync(
-      Permissions.CAMERA_ROLL
-    );
+    const cameraRollPermission = await Permissions.askAsync(Permissions.CAMERA_ROLL);
 
-    if (
-      cameraPermission.status === "granted" &&
-      cameraRollPermission.status === "granted"
-    ) {
+    if (cameraPermission.status === 'granted' && cameraRollPermission.status === 'granted') {
       const capturedImage = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3]
@@ -74,10 +61,11 @@ class HomeScreen extends React.Component {
       imageUri,
       [{ resize: { width: 400 } }],
       {
-        format: "png"
+        format: 'png'
       }
     );
     console.log(processedImage);
+    this.getUri(processedImage.uri);
     this.props.addImages(processedImage.uri);
   };
 
@@ -101,11 +89,60 @@ class HomeScreen extends React.Component {
     // }
   };
 
+  getUri(path) {
+    const Blob = RNFetchBlob.polyfill.Blob;
+    const fs = RNFetchBlob.fs;
+    window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest;
+    window.Blob = Blob;
+    //const { uid } = this.state.user
+    const uid = '12345';
+    ImagePicker.openPicker({
+      width: 300,
+      height: 300,
+      cropping: true,
+      mediaType: 'photo'
+    })
+      .then(image => {
+        const imagePath = image.path;
+
+        let uploadBlob = null;
+        const firebase = require('firebase');
+
+        const imageRef = firebase
+          .storage()
+          .ref(uid)
+          .child('dp.jpg');
+        const mime = 'image/jpg';
+        fs.readFile(imagePath, 'base64')
+          .then(data =>
+            //console.log(data);
+            Blob.build(data, { type: `${mime};BASE64` })
+          )
+          .then(blob => {
+            uploadBlob = blob;
+            return imageRef.put(blob, { contentType: mime });
+          })
+          .then(() => {
+            uploadBlob.close();
+            return imageRef.getDownloadURL();
+          })
+          .then(url => {
+            console.log(url);
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
+
   handleRegister() {}
 
   RenderUser(users) {
     if (users != null) {
-      console.log("data");
+      console.log('data');
       console.log(users);
 
       return (
@@ -123,7 +160,7 @@ class HomeScreen extends React.Component {
     return (
       <View>
         <Tile
-          titleStyle={{ alignItems: "center" }}
+          titleStyle={{ alignItems: 'center' }}
           //key={item}
           containerStyle={{ flex: 1, marginRight: 10 }}
           imageSrc={{ uri: item }}
@@ -163,12 +200,12 @@ class HomeScreen extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "center",
+    justifyContent: 'center',
     margin: 20
   },
   imageContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     margin: 20
   },
   image: {
@@ -187,7 +224,7 @@ const styles = StyleSheet.create({
     margin: 60
   },
   tiles: {
-    justifyContent: "center"
+    justifyContent: 'center'
   }
 });
 
