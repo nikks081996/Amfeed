@@ -32,7 +32,7 @@ export default class App extends React.Component {
 
   render() {
     const store = createStore(reducers, {}, applyMiddleware(ReduxThunk));
-
+    console.log('enter');
     // return (
     //   <Provider store={store}>
     //     <PersistGate persistor={persistor}>

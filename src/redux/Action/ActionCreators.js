@@ -1,5 +1,6 @@
-import * as ActionTypes from "./ActionTypes";
-import { baseUrl } from "../Url/baseUrl";
+import { Actions } from 'react-native-router-flux';
+import * as ActionTypes from './ActionTypes';
+import { baseUrl } from '../Url/baseUrl';
 
 export const userFetchingFailed = errorMessage => ({
   type: ActionTypes.IMAGES_LOADING_FAILED,
@@ -15,8 +16,18 @@ export const userLoading = () => ({
   type: ActionTypes.IMAGES_LOADING,
   payload: null
 });
+//const obj = [];
+export const fetchUser = () => dispatch => {
+  const firebase = require('firebase');
 
-export const fetchUser = () => ({
+  const playersRef = firebase.database().ref('images/');
+
+  return playersRef.orderByKey().on('child_added', data => {
+    dispatch(addLeaders(data));
+  });
+};
+
+export const addLeaders = data => ({
   type: ActionTypes.FETCH_IMAGES,
-  payload: null
+  payload: data
 });

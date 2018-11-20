@@ -33,7 +33,9 @@ class LoginTab extends Component {
       remember: false,
       showModal: false,
       email: '',
-      loading: false
+      loading: false,
+      showUsername: '',
+      showPassword: ''
     };
   }
 
@@ -43,8 +45,20 @@ class LoginTab extends Component {
       if (userinfo) {
         this.setState({ username: userinfo.username });
         this.setState({ password: userinfo.password });
-        this.setState({ remember: true });
+        this.setState({ remember: userinfo.remember });
       }
+
+      setTimeout(() => {
+        //Start the timer
+        //  this.props.fetchUser();
+
+        console.log('henw');
+        console.log(this.state.remember);
+        if (this.state.remember) {
+          this.setState({ showUsername: this.state.username });
+          this.setState({ showPassword: this.state.password });
+        } //After 1 second, set render to true
+      }, 2000);
     });
   }
 
@@ -59,7 +73,7 @@ class LoginTab extends Component {
     const { username, password } = this.state;
     Keyboard.dismiss();
     //  this.renderButton();
-    console.log(username, password);
+    //console.log(username, password);
     firebase
       .auth()
       .signInWithEmailAndPassword(username, password)
@@ -82,8 +96,6 @@ class LoginTab extends Component {
     // console.log(user.username);
 
     this.setState({
-      username: '',
-      password: '',
       loading: !this.state.loading
     });
     //sconsole.log(b);
@@ -153,30 +165,28 @@ class LoginTab extends Component {
   }
 
   storeData() {
-    console.log(JSON.stringify(this.state));
-    if (this.state.remember) {
-      SecureStore.setItemAsync(
-        'userinfo',
-        JSON.stringify({
-          username: this.state.username,
-          password: this.state.password
-        })
-      ).catch(error => console.log('Could not save user info', error));
-    } else {
-      SecureStore.deleteItemAsync('userinfo').catch(error =>
-        console.log('Could not delete user info', error)
-      );
-    }
-    Actions.AppNavigator();
+    // console.log(JSON.stringify(this.state));
+
+    SecureStore.setItemAsync(
+      'userinfo',
+      JSON.stringify({
+        username: this.state.showUsername,
+        password: this.state.showPassword,
+        remember: this.state.remember
+      })
+    ).catch(error => console.log('Could not save user info', error));
+
+    const userName = this.state.username;
+    Actions.AppNavigator({ userName });
   }
 
   successOrNot() {
     //console.log("spinner Enter");
     if (this.state.loading) {
-      console.log('loading');
+      //  console.log('loading');
       return <Spinner />;
     }
-    console.log(this.state.loading);
+    //  console.log(this.state.loading);
     return <View />;
 
     //return <Spinner />;
@@ -190,15 +200,15 @@ class LoginTab extends Component {
           <Input
             placeholder="Username"
             leftIcon={{ type: 'font-awesome', name: 'user-o' }}
-            onChangeText={username => this.setState({ username })}
-            value={this.state.username}
+            onChangeText={username => this.setState({ showUsername: username })}
+            value={this.state.showUsername}
             containerStyle={styles.formInput}
           />
           <Input
             placeholder="Password"
             leftIcon={{ type: 'font-awesome', name: 'key' }}
-            onChangeText={password => this.setState({ password })}
-            value={this.state.password}
+            onChangeText={password => this.setState({ showPassword: password })}
+            value={this.state.showPassword}
             containerStyle={styles.formInput}
           />
           <CheckBox
@@ -311,7 +321,7 @@ class RegisterTab extends Component {
       username: '',
       password: '',
       confirmPassword: '',
-      remember: false,
+
       loading: false
     };
   }
@@ -356,7 +366,7 @@ class RegisterTab extends Component {
       aspect: [4, 3]
     });
 
-    console.log(result);
+    // console.log(result);
 
     if (!result.cancelled) {
       this.processImage(result.uri);
@@ -377,7 +387,7 @@ class RegisterTab extends Component {
       this.setState({ loading: !this.state.loading });
       // this.changeLoadingState.bind(this);
       // this.successOrNot();
-      console.log('firebase enter');
+      // console.log('firebase enter');
       firebase
         .auth()
         .createUserWithEmailAndPassword(username, password)
@@ -394,7 +404,8 @@ class RegisterTab extends Component {
               this.setState({ loading: !this.state.loading });
               //   this.changeLoadingState.bind(this);
               //  this.successOrNot();
-              Actions.AppNavigator();
+              const userName = this.state.username;
+              Actions.AppNavigator({ userName });
             });
         })
         .catch(error => {
@@ -421,62 +432,52 @@ class RegisterTab extends Component {
     // this.setState({ loading: true });
   }
 
-  signUpSuccess() {
-    console.log('success');
-    //this.setState({ loading: false });
-    //  this.successOrNot();
-    Actions.AppNavigator();
-  }
+  // signUpSuccess() {
+  //   // console.log('success');
+  //   //this.setState({ loading: false });
+  //   //  this.successOrNot();
+  //   Actions.AppNavigator();
+  // }
   successOrNot() {
     //console.log("spinner Enter");
     if (this.state.loading) {
-      console.log('loading');
+      //console.log('loading');
       return <Spinner />;
     }
-    console.log(this.state.loading);
+    // console.log(this.state.loading);
     return <View />;
 
     //return <Spinner />;
   }
 
-  onLoginSuccess() {
-    this.storeData();
-    console.log('Success');
-    this.setState({
-      username: '',
-      password: ''
-    });
-  }
+  // onLoginFailed() {
+  //   console.log('Failed');
+  //   Alert.alert(
+  //     'Authentication Failed',
+  //     'Login Failed',
+  //     [
+  //       {
+  //         text: 'Ok'
+  //       }
+  //     ],
+  //     {
+  //       cancelable: true
+  //     }
+  //   );
+  //   //  this.setState({ error: "Authentication Failed", loading: false });
+  // }
 
-  onLoginFailed() {
-    console.log('Failed');
-    Alert.alert(
-      'Authentication Failed',
-      'Login Failed',
-      [
-        {
-          text: 'Ok'
-        }
-      ],
-      {
-        cancelable: true
-      }
-    );
-    //  this.setState({ error: "Authentication Failed", loading: false });
-  }
-
-  storeData() {
-    console.log(JSON.stringify(this.state));
-    if (this.state.remember) {
-      SecureStore.setItemAsync(
-        'userinfo',
-        JSON.stringify({
-          username: this.state.username,
-          password: this.state.password
-        })
-      ).catch(error => console.log('Could not save user info', error));
-    }
-  }
+  // storeData() {
+  //   //console.log(JSON.stringify(this.state));
+  //   SecureStore.setItemAsync(
+  //     'userinfo',
+  //     JSON.stringify({
+  //       username: this.state.username,
+  //       password: this.state.password,
+  //       remember: this.state.remember
+  //     })
+  //   ).catch(error => console.log('Could not save user info', error));
+  // }
 
   cancelRegister() {
     this.setState({ username: '', password: '', confirmPassword: '' });
@@ -510,13 +511,6 @@ class RegisterTab extends Component {
               containerStyle={styles.formInput}
             />
 
-            <CheckBox
-              title="Remember Me"
-              center
-              checked={this.state.remember}
-              onPress={() => this.setState({ remember: !this.state.remember })}
-              containerStyle={styles.formCheckbox}
-            />
             <View style={styles.formButton}>
               <Button
                 onPress={() => this.handleRegister()}
@@ -591,7 +585,7 @@ const styles = StyleSheet.create({
   },
   dialog: {
     padding: 20,
-    fontSize: 24,
+    // fontSize: 24,
     fontWeight: 'bold',
     backgroundColor: '#512DA8',
     textAlign: 'center',
@@ -601,7 +595,7 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 18,
     margin: 10,
-    textColor: 'white'
+    color: 'white'
   },
   loading: {
     justifyContent: 'center',
