@@ -13,14 +13,8 @@ export default (state = INITIAL_STATE, action) => {
       //  console.log('reducers');
       //   console.log(action.payload);
       // state = INITIAL_STATE;
-      console.log('action.payload');
+      //  console.log('action.payload');
       return { ...state, isLoading: false, errMess: null, data: action.payload };
-
-    case ActionTypes.IMAGES_ADD:
-      //action.payload.concat(state.data);
-      // new = state.new.unshift(action.payload);
-      return { ...state, data: state.data.concat(action.payload) };
-    // return state;
 
     case ActionTypes.IMAGES_LOADING:
       //  console.log(action.payload);

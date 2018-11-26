@@ -7,7 +7,8 @@ import {
   Keyboard,
   Modal,
   Text,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator
 } from 'react-native';
 import { Input, CheckBox, Icon, Button } from 'react-native-elements';
 import { SecureStore, Permissions, ImagePicker, ImageManipulator, Notifications } from 'expo';
@@ -35,7 +36,8 @@ class LoginTab extends Component {
       email: '',
       loading: false,
       showUsername: '',
-      showPassword: ''
+      showPassword: '',
+      emailSentLoading: false
     };
   }
 
@@ -49,15 +51,12 @@ class LoginTab extends Component {
       }
 
       setTimeout(() => {
-        //Start the timer
-        //  this.props.fetchUser();
-
-        console.log('henw');
-        console.log(this.state.remember);
+        //console.log('henw');
+        //console.log(this.state.remember);
         if (this.state.remember) {
           this.setState({ showUsername: this.state.username });
           this.setState({ showPassword: this.state.password });
-        } //After 1 second, set render to true
+        }
       }, 2000);
     });
   }
@@ -70,13 +69,12 @@ class LoginTab extends Component {
     const firebase = require('firebase');
 
     this.setState({ loading: !this.state.loading });
-    const { username, password } = this.state;
+    const { showUsername, showPassword } = this.state;
     Keyboard.dismiss();
-    //  this.renderButton();
-    //console.log(username, password);
+
     firebase
       .auth()
-      .signInWithEmailAndPassword(username, password)
+      .signInWithEmailAndPassword(showUsername, showPassword)
       .then(this.onLoginSuccess.bind(this))
       .catch(this.onLoginFailed.bind(this));
   }
@@ -85,16 +83,6 @@ class LoginTab extends Component {
     this.storeData();
     console.log('Success');
 
-    // firebase
-    //   .database()
-    //   .ref('users')
-    //   .on('value', snapshot => {
-    //     console.log(snapshot.val());
-    //   });
-
-    // const user = firebase.auth().currentUser;
-    // console.log(user.username);
-
     this.setState({
       loading: !this.state.loading
     });
@@ -102,21 +90,59 @@ class LoginTab extends Component {
   }
 
   checkEmail() {
+    // const firebase = require('firebase');
+    // const playersRef = firebase.database().ref('users');
+    // playersRef
+    //   .orderByChild('username')
+    //   .equalTo(this.state.email)
+    //   .on(
+    //     'child_added',
+    //     data => {
+    //       this.presentLocalNotification(data.val().password);
+    //     },
+    //     error => {
+    //       console.log(`Error: ${error.code}`);
+    //     }
+    //   );
+    // this.resetPassword();
+  }
+
+  resetPassword() {
     const firebase = require('firebase');
 
-    const playersRef = firebase.database().ref('users');
-    playersRef
-      .orderByChild('username')
-      .equalTo(this.state.email)
-      .on(
-        'child_added',
-        data => {
-          this.presentLocalNotification(data.val().password);
-        },
-        error => {
-          console.log(`Error: ${error.code}`);
-        }
-      );
+    this.setState({ loading: !this.state.loading });
+    firebase
+      .auth()
+      .sendPasswordResetEmail(this.state.email)
+      .then(() => {
+        Alert.alert(
+          'Successful',
+          'Email sent!',
+          [
+            {
+              text: 'Ok'
+            }
+          ],
+          {
+            cancelable: true
+          }
+        );
+      })
+      .catch(() => {
+        Alert.alert(
+          'Failed',
+          'Email not found',
+          [
+            {
+              text: 'Ok'
+            }
+          ],
+          {
+            cancelable: true
+          }
+        );
+      })
+      .finally(() => this.setState({ loading: !this.state.loading }));
   }
 
   async obtainNotificationPermission() {
@@ -147,6 +173,9 @@ class LoginTab extends Component {
   }
 
   onLoginFailed() {
+    SecureStore.deleteItemAsync('userinfo')
+      .then(hello => console.log('jjj'))
+      .catch(error => console.log('Could not delete user info', error));
     console.log('Failed');
     this.setState({ loading: !this.state.loading });
     Alert.alert(
@@ -161,12 +190,9 @@ class LoginTab extends Component {
         cancelable: true
       }
     );
-    //  this.setState({ error: "Authentication Failed", loading: false });
   }
 
   storeData() {
-    // console.log(JSON.stringify(this.state));
-
     SecureStore.setItemAsync(
       'userinfo',
       JSON.stringify({
@@ -181,16 +207,26 @@ class LoginTab extends Component {
   }
 
   successOrNot() {
-    //console.log("spinner Enter");
     if (this.state.loading) {
-      //  console.log('loading');
       return <Spinner />;
     }
-    //  console.log(this.state.loading);
     return <View />;
-
-    //return <Spinner />;
   }
+
+  maybeRenderUploadingOverlay = () => {
+    if (this.state.loading) {
+      return (
+        <View
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <ActivityIndicator color="#fff" animating size="large" />
+        </View>
+      );
+    }
+  };
 
   render() {
     return (
@@ -260,6 +296,7 @@ class LoginTab extends Component {
                 onChangeText={text => this.setState({ email: text })}
                 leftIcon={<Icon name="user-o" type="font-awesome" size={24} color="white" />}
               />
+              {this.maybeRenderUploadingOverlay()}
 
               <View
                 style={{ marginTop: 20, flexDirection: 'column', marginRight: 10, marginLeft: 10 }}
@@ -267,7 +304,7 @@ class LoginTab extends Component {
                 <Button
                   style={styles.modalText}
                   onPress={() => {
-                    this.checkEmail();
+                    this.resetPassword();
                     //  this.postNewComment(dishId);
                   }}
                   buttonStyle={{
@@ -321,58 +358,10 @@ class RegisterTab extends Component {
       username: '',
       password: '',
       confirmPassword: '',
-
       loading: false
     };
   }
 
-  getImageFromCamera = async () => {
-    const cameraPermission = await Permissions.askAsync(Permissions.CAMERA);
-    const cameraRollPermission = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-
-    if (cameraPermission.status === 'granted' && cameraRollPermission.status === 'granted') {
-      const capturedImage = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3]
-      });
-      if (!capturedImage.cancelled) {
-        console.log(capturedImage);
-        this.processImage(capturedImage.uri);
-      }
-    }
-  };
-
-  processImage = async imageUri => {
-    const processedImage = await ImageManipulator.manipulate(
-      imageUri,
-      [{ resize: { width: 400 } }],
-      {
-        format: 'png'
-      }
-    );
-    console.log(processedImage);
-    // this.setState({ imageUrl: processedImage.uri });
-  };
-
-  pickImageFromGallery = async () => {
-    // const { Permissions } = Expo;
-    // const { status, expires, permissions } = await Permissions.askAsync(
-    //   Permissions.READ_EXTERNAL_STORAGE,
-    //   Permissions.WRITE_EXTERNAL_STORAGE
-    // );
-    // if (status === 'granted') {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      aspect: [4, 3]
-    });
-
-    // console.log(result);
-
-    if (!result.cancelled) {
-      this.processImage(result.uri);
-    }
-    // }
-  };
   changeLoadingState = () => {
     this.setState({ loading: true });
   };
@@ -385,9 +374,7 @@ class RegisterTab extends Component {
       Alert.alert('Password didnt match');
     } else {
       this.setState({ loading: !this.state.loading });
-      // this.changeLoadingState.bind(this);
-      // this.successOrNot();
-      // console.log('firebase enter');
+
       firebase
         .auth()
         .createUserWithEmailAndPassword(username, password)
@@ -402,16 +389,14 @@ class RegisterTab extends Component {
             .then(() => {
               console.log('success');
               this.setState({ loading: !this.state.loading });
-              //   this.changeLoadingState.bind(this);
-              //  this.successOrNot();
-              const userName = this.state.username;
-              Actions.AppNavigator({ userName });
+              this.storeData();
+              // const userName = this.state.username;
+              // Actions.AppNavigator({ userName });
             });
         })
         .catch(error => {
           this.setState({ loading: !this.state.loading });
-          // this.changeLoadingState.bind(this);
-          //  this.successOrNot();
+
           const errorCode = error.code;
           const errorMessage = error.message;
           if (errorCode === 'auth/weak-password') {
@@ -429,55 +414,28 @@ class RegisterTab extends Component {
           console.log(errorCode);
         });
     }
-    // this.setState({ loading: true });
   }
 
-  // signUpSuccess() {
-  //   // console.log('success');
-  //   //this.setState({ loading: false });
-  //   //  this.successOrNot();
-  //   Actions.AppNavigator();
-  // }
+  storeData() {
+    SecureStore.setItemAsync(
+      'userinfo',
+      JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+        remember: false
+      })
+    ).catch(error => console.log('Could not save user info', error));
+
+    const userName = this.state.username;
+    Actions.AppNavigator({ userName });
+  }
+
   successOrNot() {
-    //console.log("spinner Enter");
     if (this.state.loading) {
-      //console.log('loading');
       return <Spinner />;
     }
-    // console.log(this.state.loading);
     return <View />;
-
-    //return <Spinner />;
   }
-
-  // onLoginFailed() {
-  //   console.log('Failed');
-  //   Alert.alert(
-  //     'Authentication Failed',
-  //     'Login Failed',
-  //     [
-  //       {
-  //         text: 'Ok'
-  //       }
-  //     ],
-  //     {
-  //       cancelable: true
-  //     }
-  //   );
-  //   //  this.setState({ error: "Authentication Failed", loading: false });
-  // }
-
-  // storeData() {
-  //   //console.log(JSON.stringify(this.state));
-  //   SecureStore.setItemAsync(
-  //     'userinfo',
-  //     JSON.stringify({
-  //       username: this.state.username,
-  //       password: this.state.password,
-  //       remember: this.state.remember
-  //     })
-  //   ).catch(error => console.log('Could not save user info', error));
-  // }
 
   cancelRegister() {
     this.setState({ username: '', password: '', confirmPassword: '' });
