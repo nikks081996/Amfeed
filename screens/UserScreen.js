@@ -24,7 +24,7 @@ import {
 let myData = [];
 let i = 0;
 
-class LinksScreen extends React.Component {
+class UserScreen extends React.Component {
   static navigationOptions = {
     title: 'Links'
   };
@@ -54,8 +54,10 @@ class LinksScreen extends React.Component {
   }
 
   componentWillReceiveProps(nextprops) {
-    console.log(nextprops);
+    //console.log(nextprops);
     if (nextprops.errMess === null) {
+      this.setState({ result: [] });
+
       console.log('In component');
       const json = nextprops.data.val();
       // const myObj = {
@@ -79,10 +81,13 @@ class LinksScreen extends React.Component {
         myData.push(myObjStr);
         i++;
       });
-      this.setState({ result: this.state.result.concat(myData) });
-      // console.log(this.state.result);
-      myData = [];
-      i = 0;
+      console.log(this.state.result);
+      this.setState({ result: myData });
+
+      setTimeout(() => {
+        myData = [];
+        i = 0;
+      }, 2000);
 
       // console.log(nextprops.data.val());
       // console.log(Object.keys(json)); //returning an array of keys, in this case ["-Lhdfgkjd6fn3AA-"]
@@ -422,4 +427,4 @@ const mapStateToProps = state => {
 export default connect(
   mapStateToProps,
   { fetchCurrentUserLoadedImages, noCurrentUserDataFound, currentUserLoading }
-)(LinksScreen);
+)(UserScreen);

@@ -30,7 +30,7 @@ export const fetchUser = () => dispatch => {
 
   const playersRef = firebase.database().ref('images/');
 
-  return playersRef.orderByKey().on('child_added', data => {
+  return playersRef.orderByKey().on('value', data => {
     // console.log(data);
     dispatch(addLeaders(data));
   });

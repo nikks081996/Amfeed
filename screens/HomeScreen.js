@@ -17,7 +17,8 @@ import { SecureStore, Permissions, ImagePicker } from 'expo';
 
 import { fetchUser } from '../src/redux/Action/ActionCreators';
 
-const myData = [];
+let myData = [];
+let i = 0;
 
 class HomeScreen extends React.Component {
   static navigationOptions = {
@@ -41,7 +42,9 @@ class HomeScreen extends React.Component {
 
   componentWillMount() {
     this.setState({ result: [] });
-    this.setState({ uploading: true });
+    if (this.state.uploading === false) {
+      this.setState({ uploading: true });
+    }
     console.log('mount');
     setTimeout(() => {
       this.props.fetchUser();
@@ -49,28 +52,76 @@ class HomeScreen extends React.Component {
   }
 
   componentWillReceiveProps(nextprops) {
-    const myObj = {
-      key: nextprops.data.key,
-      name: nextprops.data.val().user,
-      url: nextprops.data.val().url,
-      date: nextprops.data.val().date
-    };
+    //   const myObj = {
+    //     key: nextprops.data.key,
+    //     name: nextprops.data.val().user,
+    //     url: nextprops.data.val().url,
+    //     date: nextprops.data.val().date
+    //   };
 
-    const myObjStr = JSON.stringify(myObj);
-    // myData.push(myObjStr);
-    this.props.data = [];
-    this.setState({ result: this.state.result.concat(myObjStr) });
-  }
+    //   const myObjStr = JSON.stringify(myObj);
+    //   // myData.push(myObjStr);
+    //   this.props.data = [];
+    //   this.setState({ result: this.state.result.concat(myObjStr) });
+    if (nextprops.errMess === null) {
+      this.setState({ result: [] });
+      console.log('In component');
+      const json = nextprops.data.val();
+      // const myObj = {
+      //   key: Object.keys(json)[0],
+      //   name: Object.values(json)[0].user,
+      //   url: Object.values(json)[0].url,
+      //   date: Object.values(json)[0].date
+      // };
+      // console.log(nextprops);
 
-  shouldComponentUpdate(nextProps, nextState) {
-    console.log('shouldComponentUpdate');
-    return true;
+      console.log('json');
+      console.log(json);
+      console.log('result');
+
+      console.log('home');
+      Object.values(json).map(item => {
+        console.log(i);
+        const myObj = {
+          key: Object.keys(json)[i],
+          name: item.user,
+          url: item.url,
+          date: item.date
+        };
+        const myObjStr = JSON.stringify(myObj);
+        // console.log(myObjStr);
+        myData.push(myObjStr);
+        i++;
+      });
+      // console.log(this.state.result);
+
+      this.setState({ result: myData });
+
+      setTimeout(() => {
+        myData = [];
+        i = 0;
+      }, 2000);
+
+      // console.log(this.state.result);
+
+      // console.log(nextprops.data.val());
+      // console.log(Object.keys(json)); //returning an array of keys, in this case ["-Lhdfgkjd6fn3AA-"]
+      // console.log(Object.keys(json)[0]);
+      // console.log(Object.values(json)); //returning an array of values of property
+      // console.log(Object.values(json)[0].user); //this.props.data = [];
+
+      //
+    } else if (this.state.uploading) {
+      this.setState({ uploading: false });
+    }
   }
 
   componentWillUnmount() {
     console.log('Unmount');
     this.setState({ result: [] });
-    this.setState({ uploading: false });
+    if (this.state.uploading) {
+      this.setState({ uploading: false });
+    }
   }
 
   onRefresh = () => {
@@ -117,7 +168,9 @@ class HomeScreen extends React.Component {
 
     const renderUserCard = ({ item }) => {
       const fff = JSON.parse(item);
-      this.setState({ uploading: false });
+      if (this.state.uploading) {
+        this.setState({ uploading: false });
+      }
       return (
         <View>
           <Tile
