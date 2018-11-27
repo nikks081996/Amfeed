@@ -68,6 +68,9 @@ class UserScreen extends React.Component {
       // };
 
       console.log('home');
+      console.log(nextprops.data);
+      //  nextprops.data = [];
+      i = 0;
       Object.values(json).map(item => {
         console.log(i);
         const myObj = {
@@ -81,13 +84,13 @@ class UserScreen extends React.Component {
         myData.push(myObjStr);
         i++;
       });
-      console.log(this.state.result);
+      //  console.log(myData);
       this.setState({ result: myData });
 
       setTimeout(() => {
         myData = [];
         i = 0;
-      }, 2000);
+      }, 1000);
 
       // console.log(nextprops.data.val());
       // console.log(Object.keys(json)); //returning an array of keys, in this case ["-Lhdfgkjd6fn3AA-"]
@@ -98,6 +101,7 @@ class UserScreen extends React.Component {
       //
     } else if (this.state.uploading) {
       this.setState({ uploading: false });
+      this.setState({ result: [] });
     }
   }
 
@@ -159,6 +163,9 @@ class UserScreen extends React.Component {
         console.log(e);
         Alert.alert('Upload failed, sorry :(');
       } finally {
+        if (this.state.uploading) {
+          this.setState({ uploading: false });
+        }
         //  this.setState({ uploading: false });
       }
     }
@@ -186,7 +193,9 @@ class UserScreen extends React.Component {
       console.log('failed');
       Alert.alert('Upload failed, sorry :(');
     } finally {
-      //this.setState({ uploading: false });
+      if (this.state.uploading) {
+        this.setState({ uploading: false });
+      }
     }
     // }
   };
@@ -207,7 +216,9 @@ class UserScreen extends React.Component {
       })
       .then(() => {
         console.log('success');
-
+        if (this.state.uploading) {
+          this.setState({ uploading: false });
+        }
         //
       });
   }
@@ -263,6 +274,8 @@ class UserScreen extends React.Component {
   }
 
   deleteImages(key, url) {
+    myData = [];
+    i = 0;
     const firebase = require('firebase');
 
     if (this.state.uploading === false) {
@@ -278,6 +291,9 @@ class UserScreen extends React.Component {
       })
       .catch(error => {
         console.log(error);
+        if (this.state.uploading) {
+          this.setState({ uploading: false });
+        }
         // Uh-oh, an error occurred!
       });
 
@@ -287,12 +303,17 @@ class UserScreen extends React.Component {
       .child(key)
       .remove()
       .then(() => {
-        this.setState({ result: [] });
-        this.props.fetchCurrentUserLoadedImages(this.state.username);
+        //   this.setState({ result: [] });
+        // this.props.fetchCurrentUserLoadedImages(this.state.username);
 
         console.log(key);
       })
-      .catch(error => Alert.alert('Error', 'Could not delete Image. Try Again'));
+      .catch(error => {
+        Alert.alert('Error', 'Could not delete Image. Try Again');
+        if (this.state.uploading) {
+          this.setState({ uploading: false });
+        }
+      });
     console.log(key);
   }
 

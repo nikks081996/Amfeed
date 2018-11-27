@@ -20,6 +20,10 @@ import { fetchUser } from '../src/redux/Action/ActionCreators';
 let myData = [];
 let i = 0;
 
+let oldKeys = [];
+let newKeys = [];
+let deleteKeys = null;
+
 class HomeScreen extends React.Component {
   static navigationOptions = {
     header: null
@@ -63,8 +67,9 @@ class HomeScreen extends React.Component {
     //   // myData.push(myObjStr);
     //   this.props.data = [];
     //   this.setState({ result: this.state.result.concat(myObjStr) });
+
     if (nextprops.errMess === null) {
-      this.setState({ result: [] });
+      //this.setState({ result: [] });
       console.log('In component');
       const json = nextprops.data.val();
       // const myObj = {
@@ -74,6 +79,8 @@ class HomeScreen extends React.Component {
       //   date: Object.values(json)[0].date
       // };
       // console.log(nextprops);
+
+      // check for oldKeys is  empty or not... if empty store all keys (it checks for first time)
 
       console.log('json');
       console.log(json);
@@ -93,9 +100,26 @@ class HomeScreen extends React.Component {
         myData.push(myObjStr);
         i++;
       });
+      if (oldKeys.length !== 0) {
+        console.log('in new keys');
+        console.log(oldKeys.length);
+        newKeys = Object.keys(json);
+        deleteKeys = checkForData(newKeys);
+        console.log('index');
+        console.log(deleteKeys);
+        if (deleteKeys !== null) {
+          const replacedData = this.state.result;
+          replacedData.splice(i, 1);
+          this.setState({ result: replacedData });
+        }
+      } else {
+        console.log('in old keys');
+        oldKeys = Object.keys(json);
+        this.setState({ result: myData });
+      }
       // console.log(this.state.result);
 
-      this.setState({ result: myData });
+      // this.setState({ result: myData });
 
       setTimeout(() => {
         myData = [];
@@ -125,6 +149,7 @@ class HomeScreen extends React.Component {
   }
 
   onRefresh = () => {
+    oldKeys = [];
     this.setState({ result: [] });
     this.setState({ isRefreshing: true });
 
@@ -213,6 +238,23 @@ class HomeScreen extends React.Component {
     );
   }
 }
+
+const checkForData = newDataKeys => {
+  console.log('newDataKeys');
+
+  console.log(newDataKeys);
+  console.log(oldKeys);
+  for (i = 0; i < oldKeys.length; i++) {
+    if (!newDataKeys.includes(oldKeys[i])) {
+      console.log('delete key is');
+      console.log(oldKeys[i]);
+      oldKeys.splice(i, 1);
+      console.log(oldKeys, i);
+      return i;
+    }
+  }
+  return null;
+};
 
 const styles = StyleSheet.create({
   container: {
