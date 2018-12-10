@@ -1,17 +1,17 @@
-import React from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import React from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 const styles = StyleSheet.create({
   loadingView: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     flex: 1,
     marginTop: 100
   },
   loadingText: {
-    color: "#512DA8",
+    color: '#512DA8',
     fontSize: 14,
-    fontWeight: "bold"
+    fontWeight: 'bold'
   }
 });
 

@@ -8,25 +8,31 @@ import {
   View,
   ActivityIndicator,
   Alert,
-  RefreshControl
+  RefreshControl,
+  Modal,
+  TouchableOpacity
 } from 'react-native';
 import { connect } from 'react-redux';
 import uuid from 'uuid';
-import { Button, Tile } from 'react-native-elements';
+import { Button, Tile, Input, Icon } from 'react-native-elements';
 import { SecureStore, Permissions, ImagePicker } from 'expo';
+
+import HeaderComponentWithIcon from '../components/HeaderComponentWithIcon';
 
 import {
   fetchCurrentUserLoadedImages,
   noCurrentUserDataFound,
   currentUserLoading
 } from '../src/redux/Action/ActionCreators';
+import { ShowImage } from './ShowImage';
+import ShowVideo from './ShowVideo';
 
 let myData = [];
 let i = 0;
 
 class UserScreen extends React.Component {
   static navigationOptions = {
-    title: 'Links'
+    header: null
   };
 
   constructor(props) {
@@ -37,7 +43,11 @@ class UserScreen extends React.Component {
       remember: false,
       uploading: false,
       result: [],
-      isRefreshing: false
+      isRefreshing: false,
+      imageNotCancelled: false,
+      uri: '',
+      showModal: false,
+      caption: ''
     };
   }
 
@@ -54,11 +64,10 @@ class UserScreen extends React.Component {
   }
 
   componentWillReceiveProps(nextprops) {
-    //console.log(nextprops);
     if (nextprops.errMess === null) {
       this.setState({ result: [] });
+      myData = [];
 
-      console.log('In component');
       const json = nextprops.data.val();
       // const myObj = {
       //   key: Object.keys(json)[0],
@@ -67,38 +76,30 @@ class UserScreen extends React.Component {
       //   date: Object.values(json)[0].date
       // };
 
-      console.log('home');
       console.log(nextprops.data);
+      const dataKey = Object.keys(json);
       //  nextprops.data = [];
       i = 0;
       Object.values(json).map(item => {
-        console.log(i);
         const myObj = {
-          key: Object.keys(json)[i],
+          key: dataKey[i],
           name: item.user,
           url: item.url,
-          date: item.date
+          date: item.date,
+          caption: item.caption
         };
         const myObjStr = JSON.stringify(myObj);
-        // console.log(myObjStr);
+
         myData.push(myObjStr);
         i++;
       });
-      //  console.log(myData);
+
       this.setState({ result: myData });
 
       setTimeout(() => {
         myData = [];
         i = 0;
       }, 1000);
-
-      // console.log(nextprops.data.val());
-      // console.log(Object.keys(json)); //returning an array of keys, in this case ["-Lhdfgkjd6fn3AA-"]
-      // console.log(Object.keys(json)[0]);
-      // console.log(Object.values(json)); //returning an array of values of property
-      // console.log(Object.values(json)[0].user); //this.props.data = [];
-
-      //
     } else if (this.state.uploading) {
       this.setState({ uploading: false });
       this.setState({ result: [] });
@@ -106,7 +107,6 @@ class UserScreen extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('Unmount');
     this.setState({ result: [] });
     //   this.setState({ uploading: false });
     this.props = null;
@@ -124,7 +124,6 @@ class UserScreen extends React.Component {
     }, 1000);
     setTimeout(() => {
       this.setState({ isRefreshing: false });
-      console.log(this.state.isRefreshing);
     }, 2000);
   };
 
@@ -132,7 +131,6 @@ class UserScreen extends React.Component {
     SecureStore.getItemAsync('userinfo').then(userdata => {
       const userinfo = JSON.parse(userdata);
       if (userinfo) {
-        console.log(userinfo.username);
         this.setState({ username: userinfo.username });
       }
     });
@@ -144,29 +142,17 @@ class UserScreen extends React.Component {
 
     // this.getCurrentUserName();
     const user = this.state.username;
-    console.log(user);
     if (cameraPermission.status === 'granted' && cameraRollPermission.status === 'granted') {
       const capturedImage = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3]
       });
-      try {
-        if (!capturedImage.cancelled) {
-          if (this.state.uploading === false) {
-            this.setState({ uploading: true });
-          }
-          console.log('ggg');
-          const uploadUrl = await this.uploadImageAsync(capturedImage.uri, user);
-          //  this.processImage(capturedImage.uri);
-        }
-      } catch (e) {
-        console.log(e);
-        Alert.alert('Upload failed, sorry :(');
-      } finally {
-        if (this.state.uploading) {
-          this.setState({ uploading: false });
-        }
-        //  this.setState({ uploading: false });
+
+      if (!capturedImage.cancelled) {
+        console.log(capturedImage.uri);
+        this.setState({ showModal: true, uri: capturedImage.uri });
+        // const uploadUrl = await this.uploadImageAsync(capturedImage.uri, user);
+        //  this.processImage(capturedImage.uri);
       }
     }
   };
@@ -177,42 +163,49 @@ class UserScreen extends React.Component {
       aspect: [4, 3]
     });
 
+    if (!result.cancelled) {
+      console.log(result.uri);
+      this.setState({ showModal: true, uri: result.uri });
+    }
+
+    // }
+  };
+
+  toggleModal() {
+    this.setState({ showModal: !this.state.showModal, caption: '' });
+  }
+
+  addStatus = async () => {
+    if (this.state.uploading === false) {
+      this.setState({ uploading: true });
+    }
     const user = this.state.username;
-    console.log(user);
+    this.toggleModal();
     try {
-      if (!result.cancelled) {
-        if (this.state.uploading === false) {
-          this.setState({ uploading: true });
-        }
-        console.log('ehgfh');
-        const uploadUrl = await this.uploadImageAsync(result.uri, user);
-        console.log('uploadUrl');
-        //  this.processImage(result.uri);
-      }
+      const uploadUrl = await this.uploadImageAsync(this.state.uri, user, this.state.caption);
+      console.log('uploadUrl');
     } catch (e) {
-      console.log('failed');
       Alert.alert('Upload failed, sorry :(');
     } finally {
       if (this.state.uploading) {
         this.setState({ uploading: false });
       }
     }
-    // }
   };
 
-  async uploadUrlToDatabase(url, user) {
+  async uploadUrlToDatabase(url, user, caption) {
     const firebase = require('firebase');
 
     const date = new Date().toLocaleString();
 
-    console.log(user);
     firebase
       .database()
       .ref('images/')
       .push({
         user,
         url,
-        date
+        date,
+        caption
       })
       .then(() => {
         console.log('success');
@@ -223,7 +216,7 @@ class UserScreen extends React.Component {
       });
   }
 
-  async uploadImageAsync(uri, user) {
+  async uploadImageAsync(uri, user, caption) {
     const firebase = require('firebase');
 
     const response = await fetch(uri);
@@ -234,10 +227,9 @@ class UserScreen extends React.Component {
       .child(uuid.v4());
     console.log('uploadImageAsync');
     const snapshot = await ref.put(blob);
-    // console.log('uploadUrl');
     snapshot.ref.getDownloadURL().then(url => {
       this.setState({ result: [] });
-      this.uploadUrlToDatabase(url, user);
+      this.uploadUrlToDatabase(url, user, caption);
 
       console.log(url);
     });
@@ -263,7 +255,6 @@ class UserScreen extends React.Component {
     Alert.alert('Delete Images', 'Are you sure you want to delete this images?', [
       {
         text: 'No',
-        onPress: () => console.log('Cancel Pressed'),
         style: 'cancel'
       },
       {
@@ -305,8 +296,6 @@ class UserScreen extends React.Component {
       .then(() => {
         //   this.setState({ result: [] });
         // this.props.fetchCurrentUserLoadedImages(this.state.username);
-
-        console.log(key);
       })
       .catch(error => {
         Alert.alert('Error', 'Could not delete Image. Try Again');
@@ -314,7 +303,6 @@ class UserScreen extends React.Component {
           this.setState({ uploading: false });
         }
       });
-    console.log(key);
   }
 
   render() {
@@ -329,8 +317,6 @@ class UserScreen extends React.Component {
       }
     };
     const RenderData = data => {
-      //  console.log(this.state.result);\
-
       if (data != null) {
         return (
           <FlatList
@@ -352,18 +338,12 @@ class UserScreen extends React.Component {
       }
       return (
         <View>
-          <Tile
-            titleStyle={{ alignItems: 'center' }}
-            iconContainerStyle={{
-              marginBottom: 190,
-              marginLeft: 250
-            }}
-            onLongPress={() => this.dataDeleteConfirmation(fff.key, fff.url)}
-            containerStyle={{ flex: 1 }}
-            imageSrc={{ uri: fff.url }}
-            title="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolores dolore exercitationem"
-            contentContainerStyle={{ height: 70 }}
+          <ShowImage
+            ondata={() => this.dataDeleteConfirmation(fff.key, fff.url)}
+            caption={fff.caption}
+            url={fff.url}
           />
+
           <View
             style={{
               flex: 1,
@@ -371,30 +351,105 @@ class UserScreen extends React.Component {
               justifyContent: 'space-between'
             }}
           >
-            <Text>{fff.name}</Text>
-            <Text>{fff.date}</Text>
+            <View style={{ width: 120 }}>
+              <Text style={{ fontWeight: 'bold', color: 'blue' }}>{fff.name}</Text>
+            </View>
+            <Text style={{ fontWeight: 'bold', color: 'blue' }}>{fff.date}</Text>
           </View>
         </View>
       );
     };
     return (
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={this.state.isRefreshing} onRefresh={this.onRefresh} />
-        }
-      >
-        <View style={styles.container}>
-          <View style={styles.imageContainer}>
-            <Button title="Camera" onPress={this.getImageFromCamera} />
-            <Button title="Gallery" onPress={this.pickImageFromGallery} />
+      <View>
+        <HeaderComponentWithIcon headerText="User" />
+
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={this.state.isRefreshing} onRefresh={this.onRefresh} />
+          }
+        >
+          <View style={styles.container}>
+            <View style={styles.imageContainer}>
+              <Button title="Camera" onPress={this.getImageFromCamera} />
+              <Button title="Gallery" onPress={this.pickImageFromGallery} />
+            </View>
+            {this.maybeRenderUploadingOverlay()}
+            <View style={{ flex: 1, justifyContent: 'center', marginTop: 20 }}>
+              {RenderData(this.state.result)}
+              {noData()}
+            </View>
           </View>
-          {this.maybeRenderUploadingOverlay()}
-          <View style={{ flex: 1, justifyContent: 'center', marginTop: 20 }}>
-            {RenderData(this.state.result)}
-            {noData()}
-          </View>
-        </View>
-      </ScrollView>
+          <Modal
+            animationType={'slide'}
+            transparent
+            visible={this.state.showModal}
+            onDismiss={() => this.toggleModal()}
+            onRequestClose={() => this.toggleModal()}
+          >
+            <View style={styles.modal}>
+              <View style={styles.dialog}>
+                <Image
+                  style={{ width: '100%', height: '50%', marginBottom: 5 }}
+                  source={{ uri: this.state.uri }}
+                />
+                <Input
+                  inputStyle={{ color: 'white' }}
+                  style={styles.modalText}
+                  placeholder="Add Caption"
+                  onChangeText={caption => this.setState({ caption })}
+                  leftIcon={<Icon name="user-o" type="font-awesome" size={24} color="white" />}
+                />
+                <View
+                  style={{
+                    marginTop: 20,
+                    flexDirection: 'column',
+                    marginRight: 10,
+                    marginLeft: 10
+                  }}
+                >
+                  <Button
+                    style={styles.modalText}
+                    onPress={
+                      this.addStatus
+                      //  this.postNewComment(dishId);
+                    }
+                    buttonStyle={{
+                      backgroundColor: '#ffffff'
+                    }}
+                    titleStyle={{
+                      color: 'blue'
+                    }}
+                    title="Update Status"
+                  />
+                </View>
+                <View
+                  style={{
+                    marginTop: 30,
+                    flexDirection: 'column',
+                    marginRight: 10,
+                    marginLeft: 10
+                  }}
+                >
+                  <Button
+                    style={styles.modalText}
+                    onPress={() => {
+                      this.toggleModal();
+                      // this.resetCommentDetails();
+                    }}
+                    buttonStyle={{
+                      backgroundColor: '#ffffff'
+                    }}
+                    titleStyle={{
+                      color: 'blue'
+                    }}
+                    title="Close"
+                  />
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </ScrollView>
+      </View>
     );
   }
 }
@@ -435,12 +490,30 @@ const styles = StyleSheet.create({
   textStyleOfNoDataFound: {
     fontSize: 20,
     fontStyle: 'bold'
+  },
+  modal: {
+    justifyContent: 'center',
+    marginTop: 100,
+    marginLeft: 20,
+    marginRight: 20
+  },
+  dialog: {
+    padding: 20,
+    // fontSize: 24,
+    fontWeight: 'bold',
+    backgroundColor: '#512DA8',
+    textAlign: 'center',
+    color: 'white'
+  },
+  modalText: {
+    fontSize: 18,
+    margin: 10,
+    color: 'white'
   }
 });
 
 const mapStateToProps = state => {
   const { isLoading, errMess, data } = state.currentUser;
-  //  console.log(state.currentUser.data.date);
   return { isLoading, errMess, data };
 };
 

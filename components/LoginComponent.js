@@ -8,7 +8,8 @@ import {
   Modal,
   Text,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
+  BackHandler
 } from 'react-native';
 import { Input, CheckBox, Icon, Button } from 'react-native-elements';
 import { SecureStore, Permissions, ImagePicker, ImageManipulator, Notifications } from 'expo';
@@ -42,6 +43,8 @@ class LoginTab extends Component {
   }
 
   componentDidMount() {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+
     SecureStore.getItemAsync('userinfo').then(userdata => {
       const userinfo = JSON.parse(userdata);
       if (userinfo) {
@@ -51,14 +54,16 @@ class LoginTab extends Component {
       }
 
       setTimeout(() => {
-        //console.log('henw');
-        //console.log(this.state.remember);
         if (this.state.remember) {
           this.setState({ showUsername: this.state.username });
           this.setState({ showPassword: this.state.password });
         }
       }, 2000);
     });
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
   }
 
   toggleModal() {
@@ -81,7 +86,6 @@ class LoginTab extends Component {
 
   onLoginSuccess() {
     this.storeData();
-    console.log('Success');
 
     this.setState({
       loading: !this.state.loading
@@ -101,7 +105,6 @@ class LoginTab extends Component {
     //       this.presentLocalNotification(data.val().password);
     //     },
     //     error => {
-    //       console.log(`Error: ${error.code}`);
     //     }
     //   );
     // this.resetPassword();
@@ -176,7 +179,6 @@ class LoginTab extends Component {
     SecureStore.deleteItemAsync('userinfo')
       .then(hello => console.log('jjj'))
       .catch(error => console.log('Could not delete user info', error));
-    console.log('Failed');
     this.setState({ loading: !this.state.loading });
     Alert.alert(
       'Authentication Failed',
@@ -191,6 +193,10 @@ class LoginTab extends Component {
       }
     );
   }
+  handleBackButton = () => {
+    //  const currentRouteName = this.context.router.getCurrentPathname();
+    BackHandler.exitApp();
+  };
 
   storeData() {
     SecureStore.setItemAsync(
@@ -201,9 +207,11 @@ class LoginTab extends Component {
         remember: this.state.remember
       })
     ).catch(error => console.log('Could not save user info', error));
-
+    if (!this.state.remember) {
+      this.setState({ showUsername: '', showPassword: '' });
+    }
     const userName = this.state.username;
-    Actions.AppNavigator({ userName });
+    Actions.AppNavigator();
   }
 
   successOrNot() {
@@ -232,54 +240,56 @@ class LoginTab extends Component {
     return (
       <View>
         <HeaderComponent headerText="Login" />
-        <View style={styles.container}>
-          <Input
-            placeholder="Username"
-            leftIcon={{ type: 'font-awesome', name: 'user-o' }}
-            onChangeText={username => this.setState({ showUsername: username })}
-            value={this.state.showUsername}
-            containerStyle={styles.formInput}
-          />
-          <Input
-            placeholder="Password"
-            leftIcon={{ type: 'font-awesome', name: 'key' }}
-            onChangeText={password => this.setState({ showPassword: password })}
-            value={this.state.showPassword}
-            containerStyle={styles.formInput}
-          />
-          <CheckBox
-            title="Remember Me"
-            center
-            checked={this.state.remember}
-            onPress={() => this.setState({ remember: !this.state.remember })}
-            containerStyle={styles.formCheckbox}
-          />
-          <View style={styles.formButton}>
-            <Button
-              onPress={() => this.handleLogin()}
-              title="Login"
-              icon={<Icon name="sign-in" type="font-awesome" size={24} color="white" />}
-              buttonStyle={{
-                backgroundColor: '#512DA8'
-              }}
+        <ScrollView>
+          <View style={styles.container}>
+            <Input
+              placeholder="Username"
+              leftIcon={{ type: 'font-awesome', name: 'user-o' }}
+              onChangeText={username => this.setState({ showUsername: username })}
+              value={this.state.showUsername}
+              containerStyle={styles.formInput}
             />
-          </View>
-          <TouchableOpacity style={styles.forgotPasswordStyle} onPress={() => this.toggleModal()}>
-            <Text style={{ color: 'blue' }}>forgot password?</Text>
-          </TouchableOpacity>
-          <View style={styles.formButton}>
-            <Button
-              onPress={() => this.props.navigation.navigate('Register')}
-              title="Register"
-              clear
-              icon={<Icon name="user-plus" type="font-awesome" size={24} color="blue" />}
-              titleStyle={{
-                color: 'blue'
-              }}
+            <Input
+              placeholder="Password"
+              leftIcon={{ type: 'font-awesome', name: 'key' }}
+              onChangeText={password => this.setState({ showPassword: password })}
+              value={this.state.showPassword}
+              containerStyle={styles.formInput}
             />
+            <CheckBox
+              title="Remember Me"
+              center
+              checked={this.state.remember}
+              onPress={() => this.setState({ remember: !this.state.remember })}
+              containerStyle={styles.formCheckbox}
+            />
+            <View style={styles.formButton}>
+              <Button
+                onPress={() => this.handleLogin()}
+                title="Login"
+                icon={<Icon name="sign-in" type="font-awesome" size={24} color="white" />}
+                buttonStyle={{
+                  backgroundColor: '#512DA8'
+                }}
+              />
+            </View>
+            <TouchableOpacity style={styles.forgotPasswordStyle} onPress={() => this.toggleModal()}>
+              <Text style={{ color: 'blue' }}>forgot password?</Text>
+            </TouchableOpacity>
+            <View style={styles.formButton}>
+              <Button
+                onPress={() => this.props.navigation.navigate('Register')}
+                title="Register"
+                clear
+                icon={<Icon name="user-plus" type="font-awesome" size={24} color="blue" />}
+                titleStyle={{
+                  color: 'blue'
+                }}
+              />
+            </View>
+            <View style={styles.loading}>{this.successOrNot()}</View>
           </View>
-          <View style={styles.loading}>{this.successOrNot()}</View>
-        </View>
+        </ScrollView>
         <Modal
           animationType={'slide'}
           transparent
@@ -427,7 +437,7 @@ class RegisterTab extends Component {
     ).catch(error => console.log('Could not save user info', error));
 
     const userName = this.state.username;
-    Actions.AppNavigator({ userName });
+    Actions.AppNavigator();
   }
 
   successOrNot() {

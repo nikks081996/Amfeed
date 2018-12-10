@@ -12,17 +12,28 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import uuid from 'uuid';
-import { Button, Tile } from 'react-native-elements';
+import { Button, Tile, ListItem, Card, Icon } from 'react-native-elements';
 import { SecureStore, Permissions, ImagePicker } from 'expo';
 
-import { fetchUser } from '../src/redux/Action/ActionCreators';
+import {
+  fetchUser,
+  fetchLikedImagesKey,
+  keyForTotalNoOfLikes
+} from '../src/redux/Action/ActionCreators';
+import { ShowImage } from './ShowImage';
+import ShowVideo from './ShowVideo';
 
 let myData = [];
+let myLikeKeyList = [];
 let i = 0;
 
 let oldKeys = [];
 let newKeys = [];
 let deleteKeys = null;
+const favorite = false;
+let keyss = '';
+let list = [];
+let like = 0;
 
 class HomeScreen extends React.Component {
   static navigationOptions = {
@@ -40,7 +51,10 @@ class HomeScreen extends React.Component {
       name: [],
       url: [],
       date: [],
-      isRefreshing: false
+      isRefreshing: false,
+      likedImagesList: [],
+      noOfLikes: [],
+      likeee: 0
     };
   }
 
@@ -49,13 +63,37 @@ class HomeScreen extends React.Component {
     if (this.state.uploading === false) {
       this.setState({ uploading: true });
     }
-    console.log('mount');
+    this.getCurrentUserName();
     setTimeout(() => {
-      this.props.fetchUser();
+      this.totalLikes();
+      this.fetchLikedImage();
+      this.fetchUser();
     }, 2000);
   }
 
+  getCurrentUserName() {
+    SecureStore.getItemAsync('userinfo').then(userdata => {
+      const userinfo = JSON.parse(userdata);
+      if (userinfo) {
+        this.setState({ username: userinfo.username });
+      }
+    });
+  }
+
   componentWillReceiveProps(nextprops) {
+    //console.log('solo', nextprops);
+
+    if (nextprops.likeImagesKey.length !== 0) {
+      //console.log('enter', nextprops.likeImagesKey.length);
+      // this.setState({ likedImagesList: nextprops.likeImagesKey });
+      const json = nextprops.likeImagesKey.val();
+
+      Object.values(json).map(item => {
+        myLikeKeyList.push(item.key);
+      });
+      this.setState({ likedImagesList: myLikeKeyList });
+      myLikeKeyList = [];
+    }
     //   const myObj = {
     //     key: nextprops.data.key,
     //     name: nextprops.data.val().user,
@@ -67,10 +105,7 @@ class HomeScreen extends React.Component {
     //   // myData.push(myObjStr);
     //   this.props.data = [];
     //   this.setState({ result: this.state.result.concat(myObjStr) });
-
     if (nextprops.errMess === null) {
-      //this.setState({ result: [] });
-      console.log('In component');
       const json = nextprops.data.val();
       // const myObj = {
       //   key: Object.keys(json)[0],
@@ -78,70 +113,43 @@ class HomeScreen extends React.Component {
       //   url: Object.values(json)[0].url,
       //   date: Object.values(json)[0].date
       // };
-      // console.log(nextprops);
 
-      // check for oldKeys is  empty or not... if empty store all keys (it checks for first time)
-
-      console.log('json');
-      console.log(json);
-      console.log('result');
-
-      console.log('home');
       Object.values(json).map(item => {
-        console.log(i);
         const myObj = {
           key: Object.keys(json)[i],
           name: item.user,
           url: item.url,
-          date: item.date
+          date: item.date,
+          caption: item.caption
         };
         const myObjStr = JSON.stringify(myObj);
-        // console.log(myObjStr);
         myData.push(myObjStr);
         i++;
       });
       if (oldKeys.length !== 0) {
-        console.log('in new keys');
-        console.log(oldKeys.length);
         newKeys = Object.keys(json);
         deleteKeys = checkForData(newKeys);
-        console.log('index');
-        console.log(deleteKeys);
+
         if (deleteKeys !== null) {
           const replacedData = this.state.result;
           replacedData.splice(i, 1);
           this.setState({ result: replacedData });
         }
       } else {
-        console.log('in old keys');
         oldKeys = Object.keys(json);
         this.setState({ result: myData });
       }
-      // console.log(this.state.result);
-
-      // this.setState({ result: myData });
 
       setTimeout(() => {
         myData = [];
         i = 0;
       }, 2000);
-
-      // console.log(this.state.result);
-
-      // console.log(nextprops.data.val());
-      // console.log(Object.keys(json)); //returning an array of keys, in this case ["-Lhdfgkjd6fn3AA-"]
-      // console.log(Object.keys(json)[0]);
-      // console.log(Object.values(json)); //returning an array of values of property
-      // console.log(Object.values(json)[0].user); //this.props.data = [];
-
-      //
     } else if (this.state.uploading) {
       this.setState({ uploading: false });
     }
   }
 
   componentWillUnmount() {
-    console.log('Unmount');
     this.setState({ result: [] });
     if (this.state.uploading) {
       this.setState({ uploading: false });
@@ -149,18 +157,123 @@ class HomeScreen extends React.Component {
   }
 
   onRefresh = () => {
+    console.log(this.state.noOfLikes[0]);
     oldKeys = [];
+    list = [];
     this.setState({ result: [] });
     this.setState({ isRefreshing: true });
 
     setTimeout(() => {
-      this.props.fetchUser();
+      this.fetchLikedImage();
+      this.fetchUser();
     }, 1000);
     setTimeout(() => {
       this.setState({ isRefreshing: false });
-      console.log(this.state.isRefreshing);
     }, 2000);
   };
+
+  async fetchLikedImage() {
+    await this.props.fetchLikedImagesKey(this.state.username);
+  }
+
+  async fetchUser() {
+    await this.props.fetchUser();
+  }
+
+  async totalLikes() {
+    const firebase = require('firebase');
+
+    const playersRef = firebase.database().ref('images/');
+    playersRef.orderByKey().on('child_added', data => {
+      this.call(data.key);
+    });
+  }
+  async call(key) {
+    await this.noOfLikesForEachKey(key);
+  }
+  async noOfLikesForEachKey(key) {
+    const firebase = require('firebase');
+
+    const imagesRef = firebase.database().ref('like/');
+
+    return imagesRef
+      .orderByChild('key')
+      .equalTo(key)
+      .on('value', data => {
+        if (data.exists()) {
+          const myObj = {
+            key,
+            likes: data.numChildren()
+          };
+          const myObjStr = JSON.stringify(myObj);
+          list.push(myObjStr);
+          this.setState({
+            noOfLikes: list
+          }); // console.log('list', list);
+        } else {
+          const myObj = {
+            key,
+            likes: 0
+          };
+          const myObjStr = JSON.stringify(myObj);
+          list.push(myObjStr);
+          this.setState({
+            noOfLikes: list
+          });
+        }
+      });
+  }
+
+  likeImage = (key, byUser) => {
+    const firebase = require('firebase');
+
+    firebase
+      .database()
+      .ref('like')
+      .push({
+        key,
+        byUser
+      })
+      .then(() => {
+        console.log('success');
+      })
+      .catch(error => {});
+  };
+
+  dislike = key => {
+    const firebase = require('firebase');
+    console.log('hello');
+    firebase
+      .database()
+      .ref('like')
+      .orderByChild('key')
+      .equalTo(key)
+      .on('value', data => {
+        if (keyss !== '') {
+          console.log('in dislike');
+          let json = data.val();
+          if (json !== null) {
+            keyss = Object.keys(json)[0];
+            this.finallyDelete(keyss);
+          }
+          json = null;
+          console.log('Unliked Images from firebase also');
+        }
+      });
+  };
+
+  finallyDelete(key) {
+    const firebase = require('firebase');
+
+    firebase
+      .database()
+      .ref('like/')
+      .child(key)
+      .remove()
+      .then(() => {
+        keyss = '';
+      });
+  }
 
   maybeRenderUploadingOverlay = () => {
     if (this.state.uploading) {
@@ -178,12 +291,33 @@ class HomeScreen extends React.Component {
   };
 
   render() {
+    const getUpdatedSelectedItemsArray = id => {
+      if (this.state.likedImagesList.includes(id)) {
+        const array = this.state.likedImagesList;
+        const index = array.indexOf(id);
+        array.splice(index, 1);
+        //if id already exists delete it
+        // this.setState({
+        //   likedImagesList: array
+        // });
+        console.log('inside');
+        keyss = 'gh';
+        this.dislike(id);
+      } else {
+        // this.setState({
+        //   likedImagesList: this.state.likedImagesList.concat(id)
+        // });
+        const byUser = this.state.username;
+        this.likeImage(id, byUser);
+      }
+    };
     const RenderData = data => {
       if (data != null) {
         return (
           <FlatList
             inverted
             data={data}
+            extraData={this.state}
             renderItem={renderUserCard}
             keyExtractor={item => item.toString()}
           />
@@ -196,30 +330,44 @@ class HomeScreen extends React.Component {
       if (this.state.uploading) {
         this.setState({ uploading: false });
       }
+
+      this.state.noOfLikes.some(todo => {
+        const c = JSON.parse(todo);
+        if (c.key === fff.key) {
+          like = c.likes;
+        }
+      });
+
       return (
-        <View>
-          <Tile
-            titleStyle={{ alignItems: 'center' }}
-            iconContainerStyle={{
-              marginBottom: 190,
-              marginLeft: 250
-            }}
-            containerStyle={{ flex: 1 }}
-            imageSrc={{ uri: fff.url }}
-            title="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolores dolore exercitationem"
-            contentContainerStyle={{ height: 70 }}
+        <Card wrapperStyle={{ width: '100%' }} containerStyle={{ margin: 0 }}>
+          <ListItem
+            leftAvatar={{ title: fff.name[0] }}
+            title={fff.name}
+            subtitle={fff.date}
+            chevron
           />
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              justifyContent: 'space-between'
-            }}
-          >
-            <Text>{fff.name}</Text>
-            <Text>{fff.date}</Text>
+
+          <ShowImage caption={fff.caption} url={fff.url} />
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ flexDirection: 'column' }}>
+              <Icon
+                raised
+                reverse
+                name={this.state.likedImagesList.some(el => el === fff.key) ? 'heart' : 'heart-o'}
+                type="font-awesome"
+                color="#f50"
+                onPress={() => {
+                  getUpdatedSelectedItemsArray(fff.key);
+                }}
+              />
+              <View style={{ alignSelf: 'center' }}>
+                <Text>{like} likes</Text>
+              </View>
+            </View>
+            <Icon raised reverse name="pencil" type="font-awesome" color="#002AD9" />
           </View>
-        </View>
+          <ShowVideo />
+        </Card>
       );
     };
     return (
@@ -240,16 +388,9 @@ class HomeScreen extends React.Component {
 }
 
 const checkForData = newDataKeys => {
-  console.log('newDataKeys');
-
-  console.log(newDataKeys);
-  console.log(oldKeys);
   for (i = 0; i < oldKeys.length; i++) {
     if (!newDataKeys.includes(oldKeys[i])) {
-      console.log('delete key is');
-      console.log(oldKeys[i]);
       oldKeys.splice(i, 1);
-      console.log(oldKeys, i);
       return i;
     }
   }
@@ -287,13 +428,12 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = state => {
-  const { isLoading, errMess, data } = state.user;
-  // console.log(state.user.data);
-  return { isLoading, errMess, data };
+  const { isLoading, errMess, data, likeImagesKey, noOfLikes } = state.user;
+  return { isLoading, errMess, data, likeImagesKey, noOfLikes };
 };
 
 // connect to the actioncreators
 export default connect(
   mapStateToProps,
-  { fetchUser }
+  { fetchUser, fetchLikedImagesKey, keyForTotalNoOfLikes }
 )(HomeScreen);

@@ -4,11 +4,7 @@ import { AppLoading, Asset, Font, Icon } from 'expo';
 import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import ReduxThunk from 'redux-thunk';
-import { PersistGate } from 'redux-persist/es/integration/react';
-import AppNavigator from './navigation/AppNavigator';
-import HomeScreen from './screens/HomeScreen';
 import reducers from './src/redux/reducers';
-import LoginComponent from './components/LoginComponent';
 import RouterComponent from './RouterComponent';
 //const { persistor, store } = ConfigureStore();
 
@@ -32,7 +28,6 @@ export default class App extends React.Component {
 
   render() {
     const store = createStore(reducers, {}, applyMiddleware(ReduxThunk));
-    console.log('enter');
     // return (
     //   <Provider store={store}>
     //     <PersistGate persistor={persistor}>
