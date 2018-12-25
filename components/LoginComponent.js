@@ -113,6 +113,7 @@ class LoginTab extends Component {
   resetPassword() {
     const firebase = require('firebase');
 
+    Keyboard.dismiss();
     this.setState({ loading: !this.state.loading });
     firebase
       .auth()

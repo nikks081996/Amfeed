@@ -1,14 +1,22 @@
 import React from 'react';
-import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
 import { Video } from 'expo';
 import { MaterialIcons, Octicons } from '@expo/vector-icons';
 
 export default class ShowVideo extends React.Component {
-  state = {
-    mute: false,
-    fullScreen: false,
-    shouldPlay: true
-  };
+  // state = {
+  //   mute: false,
+  //   fullScreen: false,
+  //   shouldPlay: true
+  // };
+  constructor(props) {
+    super(props);
+    this.state = {
+      mute: true,
+      fullScreen: false,
+      shouldPlay: false
+    };
+  }
 
   handlePlayAndPause = () => {
     this.setState(prevState => ({
@@ -23,35 +31,39 @@ export default class ShowVideo extends React.Component {
   };
 
   render() {
+    console.log('videooooo', this.props);
     const { width } = Dimensions.get('window');
 
     return (
-      <View style={styles.container}>
-        <View>
-          <Text style={{ textAlign: 'center' }}> React Native Video </Text>
-          <Video
-            source={{ uri: 'http://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4' }}
-            shouldPlay={this.state.shouldPlay}
-            resizeMode="cover"
-            style={{ width, height: 300 }}
-            isMuted={this.state.mute}
-          />
-          <View style={styles.controlBar}>
-            <MaterialIcons
-              name={this.state.mute ? 'volume-mute' : 'volume-up'}
-              size={45}
-              color="white"
-              onPress={this.handleVolume}
+      <TouchableOpacity onLongPress={this.props.ondata}>
+        <View style={styles.container}>
+          <View>
+            <Video
+              source={{ uri: this.props.url }}
+              shouldPlay={this.state.shouldPlay}
+              resizeMode="cover"
+              style={{ width, height: 250 }}
+              isMuted={this.state.mute}
+              isLooping
             />
-            <MaterialIcons
-              name={this.state.shouldPlay ? 'pause' : 'play-arrow'}
-              size={45}
-              color="white"
-              onPress={this.handlePlayAndPause}
-            />
+            <View style={styles.controlBar}>
+              <MaterialIcons
+                name={this.state.mute ? 'volume-mute' : 'volume-up'}
+                size={25}
+                color="white"
+                onPress={this.handleVolume}
+              />
+              <MaterialIcons
+                name={this.state.shouldPlay ? 'pause' : 'play-arrow'}
+                size={25}
+                color="white"
+                onPress={this.handlePlayAndPause}
+              />
+            </View>
           </View>
+          <Text style={{ textAlign: 'center', paddingTop: 5 }}> {this.props.caption} </Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   }
 }
@@ -61,7 +73,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    height: 300,
+    width: '100%'
   },
   controlBar: {
     position: 'absolute',

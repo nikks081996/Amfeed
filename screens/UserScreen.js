@@ -47,7 +47,8 @@ class UserScreen extends React.Component {
       imageNotCancelled: false,
       uri: '',
       showModal: false,
-      caption: ''
+      caption: '',
+      type: ''
     };
   }
 
@@ -86,7 +87,8 @@ class UserScreen extends React.Component {
           name: item.user,
           url: item.url,
           date: item.date,
-          caption: item.caption
+          caption: item.caption,
+          type: item.type
         };
         const myObjStr = JSON.stringify(myObj);
 
@@ -145,12 +147,13 @@ class UserScreen extends React.Component {
     if (cameraPermission.status === 'granted' && cameraRollPermission.status === 'granted') {
       const capturedImage = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3]
+        aspect: [4, 3],
+        mediaTypes: 'All'
       });
 
       if (!capturedImage.cancelled) {
-        console.log(capturedImage.uri);
-        this.setState({ showModal: true, uri: capturedImage.uri });
+        console.log(capturedImage.type);
+        this.setState({ showModal: true, uri: capturedImage.uri, type: capturedImage.type });
         // const uploadUrl = await this.uploadImageAsync(capturedImage.uri, user);
         //  this.processImage(capturedImage.uri);
       }
@@ -160,12 +163,13 @@ class UserScreen extends React.Component {
   pickImageFromGallery = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
-      aspect: [4, 3]
+      aspect: [4, 3],
+      mediaTypes: 'All'
     });
 
     if (!result.cancelled) {
-      console.log(result.uri);
-      this.setState({ showModal: true, uri: result.uri });
+      console.log(result.type);
+      this.setState({ showModal: true, uri: result.uri, type: result.type });
     }
 
     // }
@@ -182,7 +186,12 @@ class UserScreen extends React.Component {
     const user = this.state.username;
     this.toggleModal();
     try {
-      const uploadUrl = await this.uploadImageAsync(this.state.uri, user, this.state.caption);
+      const uploadUrl = await this.uploadImageAsync(
+        this.state.uri,
+        user,
+        this.state.caption,
+        this.state.type
+      );
       console.log('uploadUrl');
     } catch (e) {
       Alert.alert('Upload failed, sorry :(');
@@ -193,7 +202,7 @@ class UserScreen extends React.Component {
     }
   };
 
-  async uploadUrlToDatabase(url, user, caption) {
+  async uploadUrlToDatabase(url, user, caption, type) {
     const firebase = require('firebase');
 
     const date = new Date().toLocaleString();
@@ -205,7 +214,8 @@ class UserScreen extends React.Component {
         user,
         url,
         date,
-        caption
+        caption,
+        type
       })
       .then(() => {
         console.log('success');
@@ -216,7 +226,7 @@ class UserScreen extends React.Component {
       });
   }
 
-  async uploadImageAsync(uri, user, caption) {
+  async uploadImageAsync(uri, user, caption, type) {
     const firebase = require('firebase');
 
     const response = await fetch(uri);
@@ -229,7 +239,7 @@ class UserScreen extends React.Component {
     const snapshot = await ref.put(blob);
     snapshot.ref.getDownloadURL().then(url => {
       this.setState({ result: [] });
-      this.uploadUrlToDatabase(url, user, caption);
+      this.uploadUrlToDatabase(url, user, caption, type);
 
       console.log(url);
     });
@@ -335,6 +345,30 @@ class UserScreen extends React.Component {
       const fff = JSON.parse(item);
       if (this.state.uploading) {
         this.setState({ uploading: false });
+      }
+      if (fff.type === 'video') {
+        return (
+          <View>
+            <ShowVideo
+              ondata={() => this.dataDeleteConfirmation(fff.key, fff.url)}
+              caption={fff.caption}
+              url={fff.url}
+            />
+
+            <View
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'space-between'
+              }}
+            >
+              <View style={{ width: 120 }}>
+                <Text style={{ fontWeight: 'bold', color: 'blue' }}>{fff.name}</Text>
+              </View>
+              <Text style={{ fontWeight: 'bold', color: 'blue' }}>{fff.date}</Text>
+            </View>
+          </View>
+        );
       }
       return (
         <View>

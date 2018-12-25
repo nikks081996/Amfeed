@@ -120,7 +120,8 @@ class HomeScreen extends React.Component {
           name: item.user,
           url: item.url,
           date: item.date,
-          caption: item.caption
+          caption: item.caption,
+          type: item.type
         };
         const myObjStr = JSON.stringify(myObj);
         myData.push(myObjStr);
@@ -337,7 +338,38 @@ class HomeScreen extends React.Component {
           like = c.likes;
         }
       });
+      if (fff.type === 'video') {
+        return (
+          <Card wrapperStyle={{ width: '100%' }} containerStyle={{ margin: 0 }}>
+            <ListItem
+              leftAvatar={{ title: fff.name[0] }}
+              title={fff.name}
+              subtitle={fff.date}
+              chevron
+            />
 
+            <ShowVideo url={fff.url} caption={fff.caption} />
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ flexDirection: 'column' }}>
+                <Icon
+                  raised
+                  reverse
+                  name={this.state.likedImagesList.some(el => el === fff.key) ? 'heart' : 'heart-o'}
+                  type="font-awesome"
+                  color="#f50"
+                  onPress={() => {
+                    getUpdatedSelectedItemsArray(fff.key);
+                  }}
+                />
+                <View style={{ alignSelf: 'center' }}>
+                  <Text>{like} likes</Text>
+                </View>
+              </View>
+              <Icon raised reverse name="pencil" type="font-awesome" color="#002AD9" />
+            </View>
+          </Card>
+        );
+      }
       return (
         <Card wrapperStyle={{ width: '100%' }} containerStyle={{ margin: 0 }}>
           <ListItem
@@ -366,7 +398,6 @@ class HomeScreen extends React.Component {
             </View>
             <Icon raised reverse name="pencil" type="font-awesome" color="#002AD9" />
           </View>
-          <ShowVideo />
         </Card>
       );
     };
