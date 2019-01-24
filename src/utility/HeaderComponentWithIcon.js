@@ -11,6 +11,7 @@ import {
 import { Icon } from 'react-native-elements';
 import { Actions } from 'react-native-router-flux';
 import { Ionicons } from '@expo/vector-icons';
+import Menu from './Menu';
 
 export default class App extends Component {
   constructor(props) {
@@ -24,6 +25,23 @@ export default class App extends Component {
     this.setState({ drawerClosed: !this.state.drawerClosed });
   }
 
+  showModal() {
+    if (this.state.drawerClosed) {
+      return <Menu />;
+    }
+    return <View />;
+  }
+
+  showIcon() {
+    if (this.props.headerText === 'Login' || this.props.headerText === 'Register') {
+      return <View />;
+    }
+    return (
+      <View>
+        <Icon name="more" color="white" size={24} onPress={() => this.toggleModal()} />
+      </View>
+    );
+  }
   render() {
     return (
       <View>
@@ -31,39 +49,9 @@ export default class App extends Component {
           <View>
             <Text style={styles.textStyle}>{this.props.headerText} </Text>
           </View>
-          <View>
-            <Icon name="more" color="white" size={24} onPress={() => this.toggleModal()} />
-          </View>
+          {this.showIcon()}
         </View>
-        <Modal
-          animationType={'fade'}
-          transparent
-          visible={this.state.drawerClosed}
-          onDismiss={() => this.toggleModal()}
-          onRequestClose={() => this.toggleModal()}
-        >
-          <View style={styles.modal}>
-            <View style={styles.dialog}>
-              {/* <TouchableOpacity onPress={() => this.toggleModal()}>
-                  <Text style={styles.modalText}>Profile</Text>
-                </TouchableOpacity>
-                <View
-                  style={{
-                    borderBottomColor: 'white',
-                    borderBottomWidth: 1
-                  }}
-                /> */}
-              <TouchableOpacity
-                onPress={() => {
-                  this.toggleModal();
-                  Actions.LoginComponent();
-                }}
-              >
-                <Text style={styles.modalText}>Logout</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+        {this.showModal()}
       </View>
     );
   }
@@ -103,8 +91,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)'
   },
   dialog: {
-    fontWeight: 'bold',
-    mariginTop: 20
+    fontWeight: 'bold'
+    //mariginTop: 20
   },
   modalText: {
     color: 'white',

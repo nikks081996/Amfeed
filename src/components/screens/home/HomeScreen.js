@@ -15,13 +15,9 @@ import uuid from 'uuid';
 import { Button, Tile, ListItem, Card, Icon } from 'react-native-elements';
 import { SecureStore, Permissions, ImagePicker } from 'expo';
 
-import {
-  fetchUser,
-  fetchLikedImagesKey,
-  keyForTotalNoOfLikes
-} from '../src/redux/Action/ActionCreators';
-import { ShowImage } from './ShowImage';
-import ShowVideo from './ShowVideo';
+import { fetchUser, fetchLikedImagesKey, keyForTotalNoOfLikes } from './HomeActionCreators';
+import { ShowImage } from '../../../utility/ShowImage';
+import ShowVideo from '../../../utility/ShowVideo';
 
 let myData = [];
 let myLikeKeyList = [];
@@ -59,11 +55,16 @@ class HomeScreen extends React.Component {
   }
 
   componentWillMount() {
+    // this.setState({ result: [] });
+    console.log('mount');
+    oldKeys = [];
+    list = [];
     this.setState({ result: [] });
     if (this.state.uploading === false) {
       this.setState({ uploading: true });
     }
     this.getCurrentUserName();
+    console.log('calling');
     setTimeout(() => {
       this.totalLikes();
       this.fetchLikedImage();
@@ -81,11 +82,10 @@ class HomeScreen extends React.Component {
   }
 
   componentWillReceiveProps(nextprops) {
-    //console.log('solo', nextprops);
-
+    debugger;
+    //  console.log(nextprops.data);
     if (nextprops.likeImagesKey.length !== 0) {
-      //console.log('enter', nextprops.likeImagesKey.length);
-      // this.setState({ likedImagesList: nextprops.likeImagesKey });
+      //console.log('length');
       const json = nextprops.likeImagesKey.val();
 
       Object.values(json).map(item => {
@@ -94,18 +94,11 @@ class HomeScreen extends React.Component {
       this.setState({ likedImagesList: myLikeKeyList });
       myLikeKeyList = [];
     }
-    //   const myObj = {
-    //     key: nextprops.data.key,
-    //     name: nextprops.data.val().user,
-    //     url: nextprops.data.val().url,
-    //     date: nextprops.data.val().date
-    //   };
 
-    //   const myObjStr = JSON.stringify(myObj);
-    //   // myData.push(myObjStr);
-    //   this.props.data = [];
-    //   this.setState({ result: this.state.result.concat(myObjStr) });
+    console.log('errmessssss', nextprops.errMess);
     if (nextprops.errMess === null) {
+      // console.log('errmessssss', nextprops.errMess);
+      myData = [];
       const json = nextprops.data.val();
       // const myObj = {
       //   key: Object.keys(json)[0],
@@ -113,7 +106,7 @@ class HomeScreen extends React.Component {
       //   url: Object.values(json)[0].url,
       //   date: Object.values(json)[0].date
       // };
-
+      /// console.log('nextprops', nextprops.data.val());
       Object.values(json).map(item => {
         const myObj = {
           key: Object.keys(json)[i],
@@ -121,22 +114,30 @@ class HomeScreen extends React.Component {
           url: item.url,
           date: item.date,
           caption: item.caption,
-          type: item.type
+          type: item.type,
+          userProfileImageUrl: item.userProfileImageUrl
         };
         const myObjStr = JSON.stringify(myObj);
         myData.push(myObjStr);
         i++;
       });
+      console.log('oldKeys.length', oldKeys.length);
+      console.log('this.state.result.length.length', this.state.result.length);
+
       if (oldKeys.length !== 0) {
         newKeys = Object.keys(json);
+        console.log(newKeys);
+        console.log(oldKeys);
         deleteKeys = checkForData(newKeys);
-
+        console.log('enter');
         if (deleteKeys !== null) {
+          console.log('deletekeys');
           const replacedData = this.state.result;
-          replacedData.splice(i, 1);
+          replacedData.splice(deleteKeys, 1);
           this.setState({ result: replacedData });
         }
       } else {
+        console.log('oldkeys', myData);
         oldKeys = Object.keys(json);
         this.setState({ result: myData });
       }
@@ -148,9 +149,13 @@ class HomeScreen extends React.Component {
     } else if (this.state.uploading) {
       this.setState({ uploading: false });
     }
+    console.log('result', this.state.result);
   }
 
   componentWillUnmount() {
+    console.log('unmount');
+    oldKeys = [];
+    list = [];
     this.setState({ result: [] });
     if (this.state.uploading) {
       this.setState({ uploading: false });
@@ -158,7 +163,6 @@ class HomeScreen extends React.Component {
   }
 
   onRefresh = () => {
-    console.log(this.state.noOfLikes[0]);
     oldKeys = [];
     list = [];
     this.setState({ result: [] });
@@ -210,7 +214,7 @@ class HomeScreen extends React.Component {
           list.push(myObjStr);
           this.setState({
             noOfLikes: list
-          }); // console.log('list', list);
+          });
         } else {
           const myObj = {
             key,
@@ -243,6 +247,7 @@ class HomeScreen extends React.Component {
 
   dislike = key => {
     const firebase = require('firebase');
+
     console.log('hello');
     firebase
       .database()
@@ -285,7 +290,7 @@ class HomeScreen extends React.Component {
             justifyContent: 'center'
           }}
         >
-          <ActivityIndicator color="#fff" animating size="large" />
+          <ActivityIndicator animating size="large" />
         </View>
       );
     }
@@ -314,6 +319,7 @@ class HomeScreen extends React.Component {
     };
     const RenderData = data => {
       if (data != null) {
+        // console.log('data', data);
         return (
           <FlatList
             inverted
@@ -342,7 +348,11 @@ class HomeScreen extends React.Component {
         return (
           <Card wrapperStyle={{ width: '100%' }} containerStyle={{ margin: 0 }}>
             <ListItem
-              leftAvatar={{ title: fff.name[0] }}
+              leftAvatar={
+                fff.userProfileImageUrl === '' || fff.userProfileImageUrl === undefined
+                  ? { title: fff.name[0] }
+                  : { source: { uri: fff.userProfileImageUrl } }
+              }
               title={fff.name}
               subtitle={fff.date}
               chevron
@@ -370,10 +380,15 @@ class HomeScreen extends React.Component {
           </Card>
         );
       }
+      console.log('imah', fff.userProfileImageUrl);
       return (
         <Card wrapperStyle={{ width: '100%' }} containerStyle={{ margin: 0 }}>
           <ListItem
-            leftAvatar={{ title: fff.name[0] }}
+            leftAvatar={
+              fff.userProfileImageUrl === '' || fff.userProfileImageUrl === undefined
+                ? { title: fff.name[0] }
+                : { source: { uri: fff.userProfileImageUrl } }
+            }
             title={fff.name}
             subtitle={fff.date}
             chevron

@@ -9,14 +9,16 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  BackHandler
+  BackHandler,
+  Image
 } from 'react-native';
 import { Input, CheckBox, Icon, Button } from 'react-native-elements';
+import uuid from 'uuid';
 import { SecureStore, Permissions, ImagePicker, ImageManipulator, Notifications } from 'expo';
 import { createBottomTabNavigator } from 'react-navigation';
 import { Actions } from 'react-native-router-flux';
-import { HeaderComponent } from './HeaderComponent';
-import { Spinner } from './Spinner';
+import { Spinner } from '../utility/Spinner';
+import HeaderComponentWithIcon from '../utility/HeaderComponentWithIcon';
 
 class LoginTab extends Component {
   static navigationOptions = {
@@ -38,7 +40,8 @@ class LoginTab extends Component {
       loading: false,
       showUsername: '',
       showPassword: '',
-      emailSentLoading: false
+      emailSentLoading: false,
+      userProfileImageUrl: ''
     };
   }
 
@@ -198,14 +201,41 @@ class LoginTab extends Component {
     //  const currentRouteName = this.context.router.getCurrentPathname();
     BackHandler.exitApp();
   };
+  fetchUserProfileUrl() {
+    const firebase = require('firebase');
 
+    console.log('fetching Profile images');
+    const imagesRef = firebase.database().ref('users/');
+    return imagesRef
+      .orderByChild('username')
+      .equalTo(this.state.showUsername)
+      .on('value', data => {
+        if (data.exists()) {
+          const json = data.val();
+          const myObj = {
+            userProfileImageUrl: Object.values(json)[0].userProfileImageUrl
+          };
+          console.log(myObj.userProfileImageUrl);
+          if (myObj.userProfileImageUrl === undefined || myObj.userProfileImageUrl === '') {
+            this.setState({ userProfileImageUrl: '' });
+          } else {
+            this.setState({ userProfileImageUrl: myObj.userProfileImageUrl });
+            console.log('ss', this.state.userProfileImageUrl);
+          }
+        } else {
+          this.setState({ userProfileImageUrl: '' });
+        }
+      });
+  }
   storeData() {
+    this.fetchUserProfileUrl();
     SecureStore.setItemAsync(
       'userinfo',
       JSON.stringify({
         username: this.state.showUsername,
         password: this.state.showPassword,
-        remember: this.state.remember
+        remember: this.state.remember,
+        userProfileImageUrl: this.state.userProfileImageUrl
       })
     ).catch(error => console.log('Could not save user info', error));
     if (!this.state.remember) {
@@ -240,7 +270,8 @@ class LoginTab extends Component {
   render() {
     return (
       <View>
-        <HeaderComponent headerText="Login" />
+        <HeaderComponentWithIcon headerText="Login" />
+
         <ScrollView>
           <View style={styles.container}>
             <Input
@@ -369,61 +400,104 @@ class RegisterTab extends Component {
       username: '',
       password: '',
       confirmPassword: '',
-      loading: false
+      loading: false,
+      imageUrl: ''
     };
   }
 
   changeLoadingState = () => {
     this.setState({ loading: true });
   };
-  handleRegister() {
+
+  async uploadImageAsync(uri, username, password) {
     const firebase = require('firebase');
 
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const ref = firebase
+      .storage()
+      .ref()
+      .child(uuid.v4());
+    console.log('uploadImageAsync');
+    const snapshot = await ref.put(blob);
+    snapshot.ref.getDownloadURL().then(url => {
+      this.setState({ imageUrl: url });
+      this.uploadUrlToDatabase(url, username, password);
+
+      console.log(url);
+    });
+    return snapshot.downloadURL;
+  }
+
+  async uploadUrlToDatabase(userProfileImageUrl, username, password) {
+    const firebase = require('firebase');
+
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(username, password)
+      .then(() => {
+        firebase
+          .database()
+          .ref('users')
+          .push({
+            username,
+            password,
+            userProfileImageUrl
+          })
+          .then(() => {
+            console.log('success');
+            this.setState({ loading: !this.state.loading });
+            this.storeData();
+            // const userName = this.state.username;
+            // Actions.AppNavigator({ userName });
+          });
+      })
+      .catch(error => {
+        if (this.state.loading) {
+          this.setState({ loading: false });
+        }
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        if (errorCode === 'auth/weak-password') {
+          Alert.alert('The password is too weak.');
+        } else if (errorCode === 'auth/email-already-in-use') {
+          Alert.alert('The email is already taken.');
+        } else if (errorCode === 'auth/weak-password') {
+          Alert.alert('Password is weak');
+        } else if (errorCode === 'auth/invalid-email') {
+          Alert.alert(errorMessage);
+        } else {
+          Alert.alert(errorMessage);
+        }
+        console.log(errorMessage);
+        console.log(errorCode);
+      })
+      .finally(() => {
+        if (this.state.loading) {
+          this.setState({ loading: false });
+        }
+      });
+  }
+
+  async handleRegister() {
     const { username, password, confirmPassword } = this.state;
     Keyboard.dismiss();
     if (confirmPassword !== password) {
       Alert.alert('Password didnt match');
     } else {
-      this.setState({ loading: !this.state.loading });
-
-      firebase
-        .auth()
-        .createUserWithEmailAndPassword(username, password)
-        .then(() => {
-          firebase
-            .database()
-            .ref('users')
-            .push({
-              username,
-              password
-            })
-            .then(() => {
-              console.log('success');
-              this.setState({ loading: !this.state.loading });
-              this.storeData();
-              // const userName = this.state.username;
-              // Actions.AppNavigator({ userName });
-            });
-        })
-        .catch(error => {
-          this.setState({ loading: !this.state.loading });
-
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          if (errorCode === 'auth/weak-password') {
-            Alert.alert('The password is too weak.');
-          } else if (errorCode === 'auth/email-already-in-use') {
-            Alert.alert('The email is already taken.');
-          } else if (errorCode === 'auth/weak-password') {
-            Alert.alert('Password is weak');
-          } else if (errorCode === 'auth/invalid-email') {
-            Alert.alert(errorMessage);
-          } else {
-            Alert.alert(errorMessage);
-          }
-          console.log(errorMessage);
-          console.log(errorCode);
-        });
+      if (!this.state.loading) {
+        this.setState({ loading: true });
+      }
+      try {
+        const uploadUrl = await this.uploadImageAsync(this.state.imageUrl, username, password);
+        console.log(uploadUrl);
+      } catch (e) {
+        console.log(e);
+      } finally {
+        if (this.state.loading) {
+          this.setState({ loading: false });
+        }
+      }
     }
   }
 
@@ -433,7 +507,8 @@ class RegisterTab extends Component {
       JSON.stringify({
         username: this.state.username,
         password: this.state.password,
-        remember: false
+        remember: false,
+        userProfileImageUrl: this.state.imageUrl
       })
     ).catch(error => console.log('Could not save user info', error));
 
@@ -452,14 +527,77 @@ class RegisterTab extends Component {
     this.setState({ username: '', password: '', confirmPassword: '' });
   }
 
+  getImageFromCamera = async () => {
+    const cameraPermission = await Permissions.askAsync(Permissions.CAMERA);
+    const cameraRollPermission = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+
+    // this.getCurrentUserName();
+    //const user = this.state.username;
+    if (cameraPermission.status === 'granted' && cameraRollPermission.status === 'granted') {
+      const capturedImage = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        mediaTypes: 'Images'
+      });
+
+      if (!capturedImage.cancelled) {
+        //console.log(capturedImage.type);
+        // this.setState({ imageUrl: capturedImage.uri });
+        // const uploadUrl = await this.uploadImageAsync(capturedImage.uri, user);
+        //  this.processImage(capturedImage.uri);
+        this.processImage(capturedImage.uri);
+      }
+    }
+  };
+
+  pickImageFromGallery = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      mediaTypes: 'Images'
+    });
+
+    if (!result.cancelled) {
+      //console.log(result.type);
+      //this.setState({ imageUrl: result.uri });
+      this.processImage(result.uri);
+    }
+
+    // }
+  };
+  processImage = async imageUri => {
+    const processedImage = await ImageManipulator.manipulate(
+      imageUri,
+      [{ resize: { width: 400 } }],
+      {
+        format: 'png'
+      }
+    );
+    console.log(processedImage);
+    this.setState({ imageUrl: processedImage.uri });
+    console.log(this.state.imageUrl);
+  };
   render() {
     return (
       <View>
-        <HeaderComponent headerText="Register" />
+        <HeaderComponentWithIcon headerText="Register" />
         <ScrollView>
           <View style={styles.container}>
+            <View style={styles.imageContainer}>
+              <Image
+                source={
+                  this.state.imageUrl === ''
+                    ? require('../utility/logo.png')
+                    : { uri: this.state.imageUrl }
+                }
+                loadingIndicatorSource={require('../utility/logo.png')}
+                style={styles.image}
+              />
+              <Button title="Camera" onPress={this.getImageFromCamera} />
+              <Button title="Gallery" onPress={this.pickImageFromGallery} />
+            </View>
             <Input
-              placeholder="Username"
+              placeholder="Userame"
               leftIcon={{ type: 'font-awesome', name: 'user-o' }}
               onChangeText={username => this.setState({ username })}
               value={this.state.username}
@@ -555,7 +693,7 @@ const styles = StyleSheet.create({
   dialog: {
     padding: 20,
     // fontSize: 24,
-    fontWeight: 'bold',
+    // fontWeight: 'bold',
     backgroundColor: '#512DA8',
     textAlign: 'center',
     color: 'white',

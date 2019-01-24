@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { ExpoConfigView } from '@expo/samples';
-import HeaderComponentWithIcon from '../components/HeaderComponentWithIcon';
+import HeaderComponentWithIcon from '../../../utility/HeaderComponentWithIcon';
 
 export default class SettingsScreen extends React.Component {
   static navigationOptions = {

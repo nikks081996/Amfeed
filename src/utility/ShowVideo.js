@@ -31,7 +31,7 @@ export default class ShowVideo extends React.Component {
   };
 
   render() {
-    console.log('videooooo', this.props);
+    // console.log('videooooo', this.props);
     const { width } = Dimensions.get('window');
 
     return (

@@ -4,7 +4,7 @@ import { AppLoading, Asset, Font, Icon } from 'expo';
 import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import ReduxThunk from 'redux-thunk';
-import reducers from './src/redux/reducers';
+import reducers from './src/common/CombineReducers';
 import RouterComponent from './RouterComponent';
 //const { persistor, store } = ConfigureStore();
 

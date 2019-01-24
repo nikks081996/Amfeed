@@ -17,15 +17,15 @@ import uuid from 'uuid';
 import { Button, Tile, Input, Icon } from 'react-native-elements';
 import { SecureStore, Permissions, ImagePicker } from 'expo';
 
-import HeaderComponentWithIcon from '../components/HeaderComponentWithIcon';
+import HeaderComponentWithIcon from '../../../utility/HeaderComponentWithIcon';
 
 import {
   fetchCurrentUserLoadedImages,
   noCurrentUserDataFound,
   currentUserLoading
-} from '../src/redux/Action/ActionCreators';
-import { ShowImage } from './ShowImage';
-import ShowVideo from './ShowVideo';
+} from './UserActionCreators';
+import { ShowImage } from '../../../utility/ShowImage';
+import ShowVideo from '../../../utility/ShowVideo';
 
 let myData = [];
 let i = 0;
@@ -48,7 +48,8 @@ class UserScreen extends React.Component {
       uri: '',
       showModal: false,
       caption: '',
-      type: ''
+      type: '',
+      userProfileImageUrl: ''
     };
   }
 
@@ -134,6 +135,7 @@ class UserScreen extends React.Component {
       const userinfo = JSON.parse(userdata);
       if (userinfo) {
         this.setState({ username: userinfo.username });
+        this.setState({ userProfileImageUrl: userinfo.userProfileImageUrl });
       }
     });
   }
@@ -190,7 +192,8 @@ class UserScreen extends React.Component {
         this.state.uri,
         user,
         this.state.caption,
-        this.state.type
+        this.state.type,
+        this.state.userProfileImageUrl
       );
       console.log('uploadUrl');
     } catch (e) {
@@ -202,7 +205,7 @@ class UserScreen extends React.Component {
     }
   };
 
-  async uploadUrlToDatabase(url, user, caption, type) {
+  async uploadUrlToDatabase(url, user, caption, type, userProfileImageUrl) {
     const firebase = require('firebase');
 
     const date = new Date().toLocaleString();
@@ -215,7 +218,8 @@ class UserScreen extends React.Component {
         url,
         date,
         caption,
-        type
+        type,
+        userProfileImageUrl
       })
       .then(() => {
         console.log('success');
@@ -226,7 +230,7 @@ class UserScreen extends React.Component {
       });
   }
 
-  async uploadImageAsync(uri, user, caption, type) {
+  async uploadImageAsync(uri, user, caption, type, userProfileImageUrl) {
     const firebase = require('firebase');
 
     const response = await fetch(uri);
@@ -239,7 +243,7 @@ class UserScreen extends React.Component {
     const snapshot = await ref.put(blob);
     snapshot.ref.getDownloadURL().then(url => {
       this.setState({ result: [] });
-      this.uploadUrlToDatabase(url, user, caption, type);
+      this.uploadUrlToDatabase(url, user, caption, type, userProfileImageUrl);
 
       console.log(url);
     });
@@ -255,7 +259,7 @@ class UserScreen extends React.Component {
             justifyContent: 'center'
           }}
         >
-          <ActivityIndicator color="#fff" animating size="large" />
+          <ActivityIndicator animating size="large" />
         </View>
       );
     }
@@ -522,8 +526,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   textStyleOfNoDataFound: {
-    fontSize: 20,
-    fontStyle: 'bold'
+    fontSize: 20
+    //  fontStyle: 'bold'
   },
   modal: {
     justifyContent: 'center',
@@ -533,7 +537,7 @@ const styles = StyleSheet.create({
   },
   dialog: {
     padding: 20,
-    // fontSize: 24,
+    fontSize: 24,
     fontWeight: 'bold',
     backgroundColor: '#512DA8',
     textAlign: 'center',

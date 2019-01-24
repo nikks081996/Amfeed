@@ -1,8 +1,8 @@
 import React from 'react';
 import { Scene, Router, Actions } from 'react-native-router-flux';
 import { Menu, MenuProvider, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
-import LoginComponent from './components/LoginComponent';
-import AppNavigator from './navigation/AppNavigator';
+import LoginComponent from './src/components/LoginComponent';
+import AppNavigator from './src/components/navigation/AppNavigator';
 
 const RouterComponent = () => (
   <MenuProvider>
@@ -15,12 +15,7 @@ const RouterComponent = () => (
           initial
           hideNavBar
         />
-        <Scene
-          key="AppNavigator"
-          component={AppNavigator}
-          hideNavBar
-          rightButtonImage={require('./assets/images/download.png')}
-        />
+        <Scene key="AppNavigator" component={AppNavigator} hideNavBar />
       </Scene>
     </Router>
   </MenuProvider>
