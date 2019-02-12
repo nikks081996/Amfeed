@@ -386,12 +386,9 @@ class UserScreen extends React.Component {
             style={{
               flex: 1,
               flexDirection: 'row',
-              justifyContent: 'space-between'
+              justifyContent: 'center'
             }}
           >
-            <View style={{ width: 120 }}>
-              <Text style={{ fontWeight: 'bold', color: 'blue' }}>{fff.name}</Text>
-            </View>
             <Text style={{ fontWeight: 'bold', color: 'blue' }}>{fff.date}</Text>
           </View>
         </View>
@@ -399,7 +396,7 @@ class UserScreen extends React.Component {
     };
     return (
       <View>
-        <HeaderComponentWithIcon headerText="User" />
+        <HeaderComponentWithIcon headerText="Upload" />
 
         <ScrollView
           refreshControl={
@@ -412,7 +409,7 @@ class UserScreen extends React.Component {
               <Button title="Gallery" onPress={this.pickImageFromGallery} />
             </View>
             {this.maybeRenderUploadingOverlay()}
-            <View style={{ flex: 1, justifyContent: 'center', marginTop: 20 }}>
+            <View style={{ flex: 1, justifyContent: 'center', marginTop: 20, marginBottom: 40 }}>
               {RenderData(this.state.result)}
               {noData()}
             </View>

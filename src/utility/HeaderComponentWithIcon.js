@@ -1,16 +1,6 @@
 import React, { Component } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  ScrollView
-} from 'react-native';
-import { Icon } from 'react-native-elements';
-import { Actions } from 'react-native-router-flux';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { Icon } from 'expo';
 import Menu from './Menu';
 
 export default class App extends Component {
@@ -37,21 +27,21 @@ export default class App extends Component {
       return <View />;
     }
     return (
-      <View>
-        <Icon name="more" color="white" size={24} onPress={() => this.toggleModal()} />
-      </View>
+      <TouchableOpacity onPress={() => this.toggleModal()}>
+        <Icon.Ionicons name="md-more" color="white" size={24} />
+      </TouchableOpacity>
     );
   }
   render() {
     return (
       <View>
         <View style={styles.viewStyle}>
-          <View>
-            <Text style={styles.textStyle}>{this.props.headerText} </Text>
-          </View>
-          {this.showIcon()}
+          {/* <View> */}
+          <Text style={styles.textStyle}>{this.props.headerText} </Text>
         </View>
-        {this.showModal()}
+        {/* {this.showIcon()}
+        </View>
+        {this.showModal()} */}
       </View>
     );
   }

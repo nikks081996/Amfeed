@@ -8,7 +8,8 @@ import {
   View,
   ActivityIndicator,
   Alert,
-  RefreshControl
+  RefreshControl,
+  TouchableOpacity
 } from 'react-native';
 import { connect } from 'react-redux';
 import uuid from 'uuid';
@@ -18,6 +19,7 @@ import { SecureStore, Permissions, ImagePicker } from 'expo';
 import { fetchUser, fetchLikedImagesKey, keyForTotalNoOfLikes } from './HomeActionCreators';
 import { ShowImage } from '../../../utility/ShowImage';
 import ShowVideo from '../../../utility/ShowVideo';
+import { Actions } from 'react-native-router-flux';
 
 let myData = [];
 let myLikeKeyList = [];
@@ -38,7 +40,7 @@ class HomeScreen extends React.Component {
 
   constructor(props) {
     super(props);
-
+    // console.log('constructor');
     this.state = {
       username: '',
       remember: false,
@@ -59,12 +61,16 @@ class HomeScreen extends React.Component {
     console.log('mount');
     oldKeys = [];
     list = [];
+    //debugger;
     this.setState({ result: [] });
+    // console.log(this.state.result);
+    //debugger;
+
     if (this.state.uploading === false) {
       this.setState({ uploading: true });
     }
     this.getCurrentUserName();
-    console.log('calling');
+    //console.log('calling');
     setTimeout(() => {
       this.totalLikes();
       this.fetchLikedImage();
@@ -78,11 +84,12 @@ class HomeScreen extends React.Component {
       if (userinfo) {
         this.setState({ username: userinfo.username });
       }
+      console.log('ff', userinfo.userProfileImageUrl);
     });
   }
 
   componentWillReceiveProps(nextprops) {
-    debugger;
+    //debugger;
     //  console.log(nextprops.data);
     if (nextprops.likeImagesKey.length !== 0) {
       //console.log('length');
@@ -92,14 +99,18 @@ class HomeScreen extends React.Component {
         myLikeKeyList.push(item.key);
       });
       this.setState({ likedImagesList: myLikeKeyList });
+      // setTimeout(() => {
+      //   console.log('images', this.state.likedImagesList);
+      // }, 2000);
       myLikeKeyList = [];
     }
 
     console.log('errmessssss', nextprops.errMess);
     if (nextprops.errMess === null) {
-      // console.log('errmessssss', nextprops.errMess);
+      console.log('result', this.state.result);
       myData = [];
       const json = nextprops.data.val();
+      // console.log('looo', json);
       // const myObj = {
       //   key: Object.keys(json)[0],
       //   name: Object.values(json)[0].user,
@@ -121,35 +132,45 @@ class HomeScreen extends React.Component {
         myData.push(myObjStr);
         i++;
       });
-      console.log('oldKeys.length', oldKeys.length);
-      console.log('this.state.result.length.length', this.state.result.length);
+      //console.log('oldKeys.length', oldKeys.length);
+      //console.log('this.state.result.length.length', this.state.result.length);
 
       if (oldKeys.length !== 0) {
         newKeys = Object.keys(json);
-        console.log(newKeys);
-        console.log(oldKeys);
+        // console.log(newKeys);
+        //console.log(oldKeys);
+
         deleteKeys = checkForData(newKeys);
-        console.log('enter');
+        //console.log('enter');
+        // debugger;
         if (deleteKeys !== null) {
           console.log('deletekeys');
           const replacedData = this.state.result;
           replacedData.splice(deleteKeys, 1);
           this.setState({ result: replacedData });
+          // setTimeout(() => {
+          //   console.log('result', this.state.result);
+          // }, 2000);
         }
       } else {
-        console.log('oldkeys', myData);
+        //console.log('oldkeys', myData);
+        // console.log('in nrew key');
         oldKeys = Object.keys(json);
         this.setState({ result: myData });
+        // setTimeout(() => {
+        //   console.log('result', this.state.result);
+        // }, 2000);
       }
+      //  console.log('mydata', myData);
 
       setTimeout(() => {
         myData = [];
         i = 0;
-      }, 2000);
+      }, 500);
     } else if (this.state.uploading) {
       this.setState({ uploading: false });
     }
-    console.log('result', this.state.result);
+    //console.log('result', this.state.result);
   }
 
   componentWillUnmount() {
@@ -256,7 +277,7 @@ class HomeScreen extends React.Component {
       .equalTo(key)
       .on('value', data => {
         if (keyss !== '') {
-          console.log('in dislike');
+          //console.log('in dislike');
           let json = data.val();
           if (json !== null) {
             keyss = Object.keys(json)[0];
@@ -306,7 +327,7 @@ class HomeScreen extends React.Component {
         // this.setState({
         //   likedImagesList: array
         // });
-        console.log('inside');
+        // console.log('inside');
         keyss = 'gh';
         this.dislike(id);
       } else {
@@ -318,6 +339,8 @@ class HomeScreen extends React.Component {
       }
     };
     const RenderData = data => {
+      // console.log('data', data);
+      //debugger;
       if (data != null) {
         // console.log('data', data);
         return (
@@ -371,16 +394,22 @@ class HomeScreen extends React.Component {
                     getUpdatedSelectedItemsArray(fff.key);
                   }}
                 />
-                <View style={{ alignSelf: 'center' }}>
+                <TouchableOpacity
+                  style={{ alignSelf: 'center' }}
+                  onPress={() => {
+                    console.log('navigating');
+                    this.props.navigation.navigate('LikeByComponent', { key: fff.key });
+                  }}
+                >
                   <Text>{like} likes</Text>
-                </View>
+                </TouchableOpacity>
               </View>
               <Icon raised reverse name="pencil" type="font-awesome" color="#002AD9" />
             </View>
           </Card>
         );
       }
-      console.log('imah', fff.userProfileImageUrl);
+      // console.log('imah', fff.userProfileImageUrl);
       return (
         <Card wrapperStyle={{ width: '100%' }} containerStyle={{ margin: 0 }}>
           <ListItem
@@ -407,9 +436,15 @@ class HomeScreen extends React.Component {
                   getUpdatedSelectedItemsArray(fff.key);
                 }}
               />
-              <View style={{ alignSelf: 'center' }}>
+              <TouchableOpacity
+                style={{ alignSelf: 'center' }}
+                onPress={() => {
+                  console.log('navigating');
+                  this.props.navigation.navigate('LikeByComponent', { key: fff.key });
+                }}
+              >
                 <Text>{like} likes</Text>
-              </View>
+              </TouchableOpacity>
             </View>
             <Icon raised reverse name="pencil" type="font-awesome" color="#002AD9" />
           </View>

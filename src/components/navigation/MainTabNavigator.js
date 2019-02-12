@@ -4,11 +4,13 @@ import { createStackNavigator, createBottomTabNavigator } from 'react-navigation
 
 import TabBarIcon from '../../utility/TabBarIcon';
 import HomeScreen from '../screens/home/HomeScreen';
+import LikeByComponent from '../screens/home/LikeByComponent';
 import UserScreen from '../screens/user/UserScreen';
 import SettingsScreen from '../screens/setting/SettingsScreen';
 
 const HomeStack = createStackNavigator({
-  Home: HomeScreen
+  Home: HomeScreen,
+  LikeByComponent
 });
 
 HomeStack.navigationOptions = {
@@ -16,11 +18,7 @@ HomeStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={
-        Platform.OS === 'ios'
-          ? `ios-information-circle${focused ? '' : '-outline'}`
-          : 'md-information-circle'
-      }
+      name={Platform.OS === 'ios' ? `ios-home${focused ? '' : '-outline'}` : 'md-home'}
     />
   )
 };
@@ -30,11 +28,13 @@ const UserStack = createStackNavigator({
 });
 
 UserStack.navigationOptions = {
-  tabBarLabel: 'User',
+  tabBarLabel: 'Upload',
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === 'ios' ? `ios-link${focused ? '' : '-outline'}` : 'md-link'}
+      name={
+        Platform.OS === 'ios' ? `ios-cloud-upload${focused ? '' : '-outline'}` : 'md-cloud-upload'
+      }
     />
   )
 };
@@ -44,11 +44,11 @@ const SettingsStack = createStackNavigator({
 });
 
 SettingsStack.navigationOptions = {
-  tabBarLabel: 'Settings',
+  tabBarLabel: 'Profile',
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === 'ios' ? `ios-options${focused ? '' : '-outline'}` : 'md-options'}
+      name={Platform.OS === 'ios' ? `ios-contact${focused ? '' : '-outline'}` : 'md-contact'}
     />
   )
 };

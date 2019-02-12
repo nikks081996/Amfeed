@@ -12,7 +12,7 @@ export default class Menu extends Component {
         console.log('Action Pressed');
         break;
       case 2:
-        //Actions.LoginComponent();
+        // Actions.LoginComponent();
         break;
       default:
         console.log('Default Action');

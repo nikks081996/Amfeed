@@ -38,7 +38,7 @@ export default class App extends React.Component {
     //   </Provider>
 
     // );
-
+    console.disableYellowBox = true;
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
       return (
         <AppLoading

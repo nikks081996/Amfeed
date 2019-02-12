@@ -83,16 +83,15 @@ class LoginTab extends Component {
     firebase
       .auth()
       .signInWithEmailAndPassword(showUsername, showPassword)
+
       .then(this.onLoginSuccess.bind(this))
       .catch(this.onLoginFailed.bind(this));
   }
 
   onLoginSuccess() {
-    this.storeData();
+    //this.storeData();
+    this.fetchUserProfileUrl();
 
-    this.setState({
-      loading: !this.state.loading
-    });
     //sconsole.log(b);
   }
 
@@ -215,20 +214,20 @@ class LoginTab extends Component {
           const myObj = {
             userProfileImageUrl: Object.values(json)[0].userProfileImageUrl
           };
-          console.log(myObj.userProfileImageUrl);
+          //console.log(myObj.userProfileImageUrl);
           if (myObj.userProfileImageUrl === undefined || myObj.userProfileImageUrl === '') {
             this.setState({ userProfileImageUrl: '' });
           } else {
             this.setState({ userProfileImageUrl: myObj.userProfileImageUrl });
-            console.log('ss', this.state.userProfileImageUrl);
+            // console.log('ss', this.state.userProfileImageUrl);
           }
         } else {
           this.setState({ userProfileImageUrl: '' });
         }
+        this.storeData();
       });
   }
   storeData() {
-    this.fetchUserProfileUrl();
     SecureStore.setItemAsync(
       'userinfo',
       JSON.stringify({
@@ -241,6 +240,9 @@ class LoginTab extends Component {
     if (!this.state.remember) {
       this.setState({ showUsername: '', showPassword: '' });
     }
+    this.setState({
+      loading: !this.state.loading
+    });
     const userName = this.state.username;
     Actions.AppNavigator();
   }
@@ -405,6 +407,10 @@ class RegisterTab extends Component {
     };
   }
 
+  componentWillMount() {
+    //  console.log('register mount');
+  }
+
   changeLoadingState = () => {
     this.setState({ loading: true });
   };
@@ -421,7 +427,7 @@ class RegisterTab extends Component {
     console.log('uploadImageAsync');
     const snapshot = await ref.put(blob);
     snapshot.ref.getDownloadURL().then(url => {
-      this.setState({ imageUrl: url });
+      //this.setState({ imageUrl: url });
       this.uploadUrlToDatabase(url, username, password);
 
       console.log(url);
@@ -446,22 +452,19 @@ class RegisterTab extends Component {
           })
           .then(() => {
             console.log('success');
-            this.setState({ loading: !this.state.loading });
+            // this.setState({ loading: !this.state.loading });
             this.storeData();
             // const userName = this.state.username;
             // Actions.AppNavigator({ userName });
           });
       })
       .catch(error => {
-        if (this.state.loading) {
-          this.setState({ loading: false });
-        }
         const errorCode = error.code;
         const errorMessage = error.message;
         if (errorCode === 'auth/weak-password') {
           Alert.alert('The password is too weak.');
         } else if (errorCode === 'auth/email-already-in-use') {
-          Alert.alert('The email is already taken.');
+          Alert.alert('The email is already im used.');
         } else if (errorCode === 'auth/weak-password') {
           Alert.alert('Password is weak');
         } else if (errorCode === 'auth/invalid-email') {
@@ -479,24 +482,37 @@ class RegisterTab extends Component {
       });
   }
 
-  async handleRegister() {
+  handleRegister() {
+    console.log('enter');
     const { username, password, confirmPassword } = this.state;
     Keyboard.dismiss();
     if (confirmPassword !== password) {
-      Alert.alert('Password didnt match');
+      Alert.alert('Error', 'Password didnt match');
+    } else if (username === '' || password === '' || confirmPassword === '') {
+      Alert.alert('Error', 'Please fill all the fields');
     } else {
       if (!this.state.loading) {
+        //debugger;
         this.setState({ loading: true });
       }
-      try {
+      setTimeout(() => {
+        this.callFunction(username, password);
+      }, 1000);
+    }
+  }
+  async callFunction(username, password) {
+    try {
+      if (this.state.imageUrl === '') {
+        await this.uploadUrlToDatabase(this.state.imageUrl, username, password);
+      } else {
         const uploadUrl = await this.uploadImageAsync(this.state.imageUrl, username, password);
         console.log(uploadUrl);
-      } catch (e) {
-        console.log(e);
-      } finally {
-        if (this.state.loading) {
-          this.setState({ loading: false });
-        }
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      if (this.state.loading) {
+        this.setState({ loading: false });
       }
     }
   }
@@ -524,7 +540,7 @@ class RegisterTab extends Component {
   }
 
   cancelRegister() {
-    this.setState({ username: '', password: '', confirmPassword: '' });
+    this.setState({ username: '', password: '', confirmPassword: '', imageUrl: '' });
   }
 
   getImageFromCamera = async () => {
