@@ -149,7 +149,7 @@ class UserScreen extends React.Component {
     if (cameraPermission.status === 'granted' && cameraRollPermission.status === 'granted') {
       const capturedImage = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [4, 4],
         mediaTypes: 'All'
       });
 
@@ -165,7 +165,7 @@ class UserScreen extends React.Component {
   pickImageFromGallery = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [4, 4],
       mediaTypes: 'All'
     });
 
@@ -363,13 +363,10 @@ class UserScreen extends React.Component {
               style={{
                 flex: 1,
                 flexDirection: 'row',
-                justifyContent: 'space-between'
+                justifyContent: 'center'
               }}
             >
-              <View style={{ width: 120 }}>
-                <Text style={{ fontWeight: 'bold', color: 'blue' }}>{fff.name}</Text>
-              </View>
-              <Text style={{ fontWeight: 'bold', color: 'blue' }}>{fff.date}</Text>
+              <Text style={{ fontWeight: 'bold', color: '#00BCD4' }}>{fff.date}</Text>
             </View>
           </View>
         );
@@ -389,7 +386,7 @@ class UserScreen extends React.Component {
               justifyContent: 'center'
             }}
           >
-            <Text style={{ fontWeight: 'bold', color: 'blue' }}>{fff.date}</Text>
+            <Text style={{ fontWeight: 'bold', color: '#00BCD4' }}>{fff.date}</Text>
           </View>
         </View>
       );
@@ -405,8 +402,20 @@ class UserScreen extends React.Component {
         >
           <View style={styles.container}>
             <View style={styles.imageContainer}>
-              <Button title="Camera" onPress={this.getImageFromCamera} />
-              <Button title="Gallery" onPress={this.pickImageFromGallery} />
+              <Button
+                title="Camera"
+                onPress={this.getImageFromCamera}
+                buttonStyle={{
+                  backgroundColor: '#00BCD4'
+                }}
+              />
+              <Button
+                title="Gallery"
+                onPress={this.pickImageFromGallery}
+                buttonStyle={{
+                  backgroundColor: '#00BCD4'
+                }}
+              />
             </View>
             {this.maybeRenderUploadingOverlay()}
             <View style={{ flex: 1, justifyContent: 'center', marginTop: 20, marginBottom: 40 }}>
@@ -428,7 +437,8 @@ class UserScreen extends React.Component {
                   source={{ uri: this.state.uri }}
                 />
                 <Input
-                  inputStyle={{ color: 'white' }}
+                  multiline
+                  inputStyle={{ color: 'white', height: 100 }}
                   style={styles.modalText}
                   placeholder="Add Caption"
                   onChangeText={caption => this.setState({ caption })}
@@ -452,7 +462,7 @@ class UserScreen extends React.Component {
                       backgroundColor: '#ffffff'
                     }}
                     titleStyle={{
-                      color: 'blue'
+                      color: '#00BCD4'
                     }}
                     title="Update Status"
                   />
@@ -475,7 +485,7 @@ class UserScreen extends React.Component {
                       backgroundColor: '#ffffff'
                     }}
                     titleStyle={{
-                      color: 'blue'
+                      color: '#00BCD4'
                     }}
                     title="Close"
                   />
@@ -492,7 +502,8 @@ class UserScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
-    margin: 20
+    //margin: 20
+    marginBottom: 20
   },
   imageContainer: {
     flexDirection: 'row',
@@ -536,7 +547,7 @@ const styles = StyleSheet.create({
     padding: 20,
     fontSize: 24,
     fontWeight: 'bold',
-    backgroundColor: '#512DA8',
+    backgroundColor: '#00BCD4',
     textAlign: 'center',
     color: 'white'
   },

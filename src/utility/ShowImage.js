@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Card } from 'react-native-elements';
 
 const styles = StyleSheet.create({
@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
     marginTop: 100
   },
   loadingText: {
-    color: '#512DA8',
+    color: '#00BCD4',
     fontSize: 14,
     fontWeight: 'bold'
   }
@@ -40,9 +40,35 @@ export const ShowImage = props => {
           {caption}
         </Text>
       </View> */}
-      <Card image={{ uri: url }} imageStyle={{ width: '100%', height: 250 }}>
-        <Text style={{ margin: 10 }}>{caption}</Text>
-      </Card>
+      {/* <View
+        image={{ uri: url }}
+        imageStyle={{
+          padding: 2,
+          height: Dimensions.get('window').width - 90,
+          width: Dimensions.get('window').width - 90
+        }}
+        containerStyle={{ width: Dimensions.get('window').width - 90 }}
+      > */}
+      <View
+        style={{
+          backgroundColor: 'white'
+        }}
+      >
+        <Image
+          source={{ uri: url }}
+          style={{
+            height: Dimensions.get('window').width,
+            width: Dimensions.get('window').width,
+
+            resizeMode: 'contain'
+          }}
+        />
+        <Text
+          style={{ margin: 20, textAlign: 'center', fontFamily: 'dancing-script', fontSize: 20 }}
+        >
+          {caption}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };

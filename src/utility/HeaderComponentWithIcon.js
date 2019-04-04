@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     //padding: 10
   },
   viewStyle: {
-    backgroundColor: '#512DA8',
+    backgroundColor: '#00BCD4',
     justifyContent: 'space-between',
     flexDirection: 'row',
     padding: 15,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 35,
     top: 20,
-    backgroundColor: '#512DA8'
+    backgroundColor: '#00BCD4'
   },
   outsideModel: {
     backgroundColor: 'rgba(0,0,0,0.5)'

@@ -6,7 +6,7 @@ let myLikeUser = [];
 
 class LikeByComponent extends React.Component {
   static navigationOptions = {
-    headerStyle: { height: 40, backgroundColor: '#512DA8' },
+    headerStyle: { height: 40, backgroundColor: '#00BCD4' },
     title: 'LikeBy',
     headerTintColor: '#fff'
   };

@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
 import { Video } from 'expo';
 import { MaterialIcons, Octicons } from '@expo/vector-icons';
+import { Card } from 'react-native-elements';
 
 export default class ShowVideo extends React.Component {
   // state = {
@@ -36,13 +37,15 @@ export default class ShowVideo extends React.Component {
 
     return (
       <TouchableOpacity onLongPress={this.props.ondata}>
-        <View style={styles.container}>
+        <View style={{ width: Dimensions.get('window').width, backgroundColor: 'white' }}>
           <View>
             <Video
               source={{ uri: this.props.url }}
               shouldPlay={this.state.shouldPlay}
-              resizeMode="cover"
-              style={{ width, height: 250 }}
+              resizeMode="contain"
+              style={{
+                height: Dimensions.get('window').width
+              }}
               isMuted={this.state.mute}
               isLooping
             />
@@ -61,7 +64,16 @@ export default class ShowVideo extends React.Component {
               />
             </View>
           </View>
-          <Text style={{ textAlign: 'center', paddingTop: 5 }}> {this.props.caption} </Text>
+          <Text
+            style={{
+              textAlign: 'center',
+              paddingTop: 10,
+              fontFamily: 'dancing-script',
+              fontSize: 20
+            }}
+          >
+            {this.props.caption}
+          </Text>
         </View>
       </TouchableOpacity>
     );
@@ -70,12 +82,7 @@ export default class ShowVideo extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 300,
-    width: '100%'
+    width: Dimensions.get('window').width - 90
   },
   controlBar: {
     position: 'absolute',

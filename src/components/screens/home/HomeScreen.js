@@ -9,17 +9,22 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
-  TouchableOpacity
+  TouchableOpacity,
+  Dimensions
 } from 'react-native';
 import { connect } from 'react-redux';
 import uuid from 'uuid';
-import { Button, Tile, ListItem, Card, Icon } from 'react-native-elements';
+import CarouselPager from 'react-native-carousel-pager';
+import { ListItem, Card, Icon } from 'react-native-elements';
+import Carousel, { Pagination } from 'react-native-snap-carousel';
+
 import { SecureStore, Permissions, ImagePicker } from 'expo';
 
 import { fetchUser, fetchLikedImagesKey, keyForTotalNoOfLikes } from './HomeActionCreators';
 import { ShowImage } from '../../../utility/ShowImage';
 import ShowVideo from '../../../utility/ShowVideo';
-import { Actions } from 'react-native-router-flux';
+
+import { sliderWidth, itemWidth, sliderHeight } from '../../../utility/SliderEntry.style';
 
 let myData = [];
 let myLikeKeyList = [];
@@ -32,10 +37,12 @@ const favorite = false;
 let keyss = '';
 let list = [];
 let like = 0;
-
+const verticalPages = [];
+const data1 = [];
 class HomeScreen extends React.Component {
   static navigationOptions = {
     header: null
+    //  tabBarLabel: 'Navigation Title',
   };
 
   constructor(props) {
@@ -61,10 +68,8 @@ class HomeScreen extends React.Component {
     console.log('mount');
     oldKeys = [];
     list = [];
-    //debugger;
     this.setState({ result: [] });
     // console.log(this.state.result);
-    //debugger;
 
     if (this.state.uploading === false) {
       this.setState({ uploading: true });
@@ -89,7 +94,6 @@ class HomeScreen extends React.Component {
   }
 
   componentWillReceiveProps(nextprops) {
-    //debugger;
     //  console.log(nextprops.data);
     if (nextprops.likeImagesKey.length !== 0) {
       //console.log('length');
@@ -142,7 +146,6 @@ class HomeScreen extends React.Component {
 
         deleteKeys = checkForData(newKeys);
         //console.log('enter');
-        // debugger;
         if (deleteKeys !== null) {
           console.log('deletekeys');
           const replacedData = this.state.result;
@@ -340,15 +343,33 @@ class HomeScreen extends React.Component {
     };
     const RenderData = data => {
       // console.log('data', data);
-      //debugger;
       if (data != null) {
         // console.log('data', data);
         return (
-          <FlatList
+          <Carousel
             inverted
+            //layout={'stack'}
+            //vertical
+            layoutCardOffset={'18'}
             data={data}
+            firstItem={data.length - 1}
             extraData={this.state}
             renderItem={renderUserCard}
+            sliderWidth={sliderWidth}
+            sliderHeight={sliderHeight}
+            itemWidth={Dimensions.get('window').width}
+            itemHeight={Dimensions.get('window').height}
+            inactiveSlideOpacity={1}
+            inactiveSlideScale={0.95}
+            decelerationRate={'fast'}
+            activeSlideAlignment={'center'}
+            containerCustomStyle={styles.slider}
+            contentContainerCustomStyle={styles.sliderContentContainer}
+            activeAnimationType={'spring'}
+            activeAnimationOptions={{
+              friction: 4,
+              tension: 40
+            }}
             keyExtractor={item => item.toString()}
           />
         );
@@ -369,7 +390,7 @@ class HomeScreen extends React.Component {
       });
       if (fff.type === 'video') {
         return (
-          <Card wrapperStyle={{ width: '100%' }} containerStyle={{ margin: 0 }}>
+          <View style={{ backgroundColor: 'white' }}>
             <ListItem
               leftAvatar={
                 fff.userProfileImageUrl === '' || fff.userProfileImageUrl === undefined
@@ -381,7 +402,7 @@ class HomeScreen extends React.Component {
               chevron
             />
 
-            <ShowVideo url={fff.url} caption={fff.caption} />
+            <ShowVideo caption={fff.caption} url={fff.url} />
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flexDirection: 'column' }}>
                 <Icon
@@ -398,7 +419,9 @@ class HomeScreen extends React.Component {
                   style={{ alignSelf: 'center' }}
                   onPress={() => {
                     console.log('navigating');
-                    this.props.navigation.navigate('LikeByComponent', { key: fff.key });
+                    this.props.navigation.navigate('LikeByComponent', {
+                      key: fff.key
+                    });
                   }}
                 >
                   <Text>{like} likes</Text>
@@ -406,12 +429,12 @@ class HomeScreen extends React.Component {
               </View>
               <Icon raised reverse name="pencil" type="font-awesome" color="#002AD9" />
             </View>
-          </Card>
+          </View>
         );
       }
       // console.log('imah', fff.userProfileImageUrl);
       return (
-        <Card wrapperStyle={{ width: '100%' }} containerStyle={{ margin: 0 }}>
+        <View style={{ backgroundColor: 'white' }}>
           <ListItem
             leftAvatar={
               fff.userProfileImageUrl === '' || fff.userProfileImageUrl === undefined
@@ -440,7 +463,9 @@ class HomeScreen extends React.Component {
                 style={{ alignSelf: 'center' }}
                 onPress={() => {
                   console.log('navigating');
-                  this.props.navigation.navigate('LikeByComponent', { key: fff.key });
+                  this.props.navigation.navigate('LikeByComponent', {
+                    key: fff.key
+                  });
                 }}
               >
                 <Text>{like} likes</Text>
@@ -448,7 +473,7 @@ class HomeScreen extends React.Component {
             </View>
             <Icon raised reverse name="pencil" type="font-awesome" color="#002AD9" />
           </View>
-        </Card>
+        </View>
       );
     };
     return (
@@ -456,12 +481,11 @@ class HomeScreen extends React.Component {
         refreshControl={
           <RefreshControl refreshing={this.state.isRefreshing} onRefresh={this.onRefresh} />
         }
+        style={{ backgroundColor: 'white' }}
       >
         <View style={styles.container}>
           {this.maybeRenderUploadingOverlay()}
-          <View style={{ flex: 1, justifyContent: 'center', marginTop: 20 }}>
-            {RenderData(this.state.result)}
-          </View>
+          {RenderData(this.state.result)}
         </View>
       </ScrollView>
     );
@@ -480,8 +504,10 @@ const checkForData = newDataKeys => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     justifyContent: 'center',
-    margin: 20
+    width: '100%',
+    backgroundColor: 'white'
   },
   imageContainer: {
     flexDirection: 'row',
@@ -505,7 +531,11 @@ const styles = StyleSheet.create({
   },
   tiles: {
     justifyContent: 'center'
-  }
+  },
+  slider: {
+    overflow: 'visible'
+  },
+  sliderContentContainer: {}
 });
 
 const mapStateToProps = state => {

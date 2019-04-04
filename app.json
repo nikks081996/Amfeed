@@ -8,9 +8,9 @@
     "platforms": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/download.png",
+    "icon": "./assets/images/logo.png",
     "splash": {
-      "image": "./assets/images/download.png",
+      "image": "./assets/images/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -26,7 +26,7 @@
       "package": "www.hunchdeveloper.com"
     },
     "androidStatusBar": {
-      "backgroundColor": "#512DA8"
+      "backgroundColor": "#00BCD4"
     }
   }
 }

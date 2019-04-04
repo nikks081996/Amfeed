@@ -173,7 +173,7 @@ class LoginTab extends Component {
       android: {
         sound: true,
         vibrate: true,
-        color: '#512DA8'
+        color: '#00BCD4'
       }
     });
   }
@@ -277,7 +277,7 @@ class LoginTab extends Component {
         <ScrollView>
           <View style={styles.container}>
             <Input
-              placeholder="Username"
+              placeholder="Email"
               leftIcon={{ type: 'font-awesome', name: 'user-o' }}
               onChangeText={username => this.setState({ showUsername: username })}
               value={this.state.showUsername}
@@ -303,21 +303,24 @@ class LoginTab extends Component {
                 title="Login"
                 icon={<Icon name="sign-in" type="font-awesome" size={24} color="white" />}
                 buttonStyle={{
-                  backgroundColor: '#512DA8'
+                  backgroundColor: '#00BCD4'
                 }}
               />
             </View>
             <TouchableOpacity style={styles.forgotPasswordStyle} onPress={() => this.toggleModal()}>
-              <Text style={{ color: 'blue' }}>forgot password?</Text>
+              <Text style={{ color: '#00BCD4', fontFamily: 'dancing-script' }}>
+                forgot password?
+              </Text>
             </TouchableOpacity>
             <View style={styles.formButton}>
               <Button
                 onPress={() => this.props.navigation.navigate('Register')}
                 title="Register"
                 clear
-                icon={<Icon name="user-plus" type="font-awesome" size={24} color="blue" />}
+                icon={<Icon name="user-plus" type="font-awesome" size={24} color="#00BCD4" />}
                 titleStyle={{
-                  color: 'blue'
+                  color: '#00BCD4',
+                  fontFamily: 'dancing-script'
                 }}
               />
             </View>
@@ -334,6 +337,7 @@ class LoginTab extends Component {
           <View style={styles.modal}>
             <View style={styles.dialog}>
               <Input
+                multiline
                 inputStyle={{ color: 'white' }}
                 style={styles.modalText}
                 placeholder="Enter Registered Email Id"
@@ -355,7 +359,7 @@ class LoginTab extends Component {
                     backgroundColor: '#ffffff'
                   }}
                   titleStyle={{
-                    color: 'blue'
+                    color: '#00BCD4'
                   }}
                   title="Send Password"
                 />
@@ -374,7 +378,7 @@ class LoginTab extends Component {
                     backgroundColor: '#ffffff'
                   }}
                   titleStyle={{
-                    color: 'blue'
+                    color: '#00BCD4'
                   }}
                   title="Close"
                 />
@@ -492,7 +496,6 @@ class RegisterTab extends Component {
       Alert.alert('Error', 'Please fill all the fields');
     } else {
       if (!this.state.loading) {
-        //debugger;
         this.setState({ loading: true });
       }
       setTimeout(() => {
@@ -609,11 +612,23 @@ class RegisterTab extends Component {
                 loadingIndicatorSource={require('../utility/logo.png')}
                 style={styles.image}
               />
-              <Button title="Camera" onPress={this.getImageFromCamera} />
-              <Button title="Gallery" onPress={this.pickImageFromGallery} />
+              <Button
+                title="Camera"
+                onPress={this.getImageFromCamera}
+                buttonStyle={{
+                  backgroundColor: '#00BCD4'
+                }}
+              />
+              <Button
+                title="Gallery"
+                onPress={this.pickImageFromGallery}
+                buttonStyle={{
+                  backgroundColor: '#00BCD4'
+                }}
+              />
             </View>
             <Input
-              placeholder="Userame"
+              placeholder="Email"
               leftIcon={{ type: 'font-awesome', name: 'user-o' }}
               onChangeText={username => this.setState({ username })}
               value={this.state.username}
@@ -640,7 +655,7 @@ class RegisterTab extends Component {
                 title="Register"
                 icon={<Icon name="user-plus" type="font-awesome" size={24} color="white" />}
                 buttonStyle={{
-                  backgroundColor: '#512DA8'
+                  backgroundColor: '#00BCD4'
                 }}
               />
             </View>
@@ -649,7 +664,7 @@ class RegisterTab extends Component {
                 onPress={() => this.cancelRegister()}
                 title="Cancel"
                 buttonStyle={{
-                  backgroundColor: '#512DA8'
+                  backgroundColor: '#00BCD4'
                 }}
               />
             </View>
@@ -710,7 +725,7 @@ const styles = StyleSheet.create({
     padding: 20,
     // fontSize: 24,
     // fontWeight: 'bold',
-    backgroundColor: '#512DA8',
+    backgroundColor: '#00BCD4',
     textAlign: 'center',
     color: 'white',
     marginBottom: 20
@@ -734,7 +749,7 @@ const Login = createBottomTabNavigator(
   },
   {
     tabBarOptions: {
-      activeBackgroundColor: '#9575CD',
+      activeBackgroundColor: '#00BCD4',
       inactiveBackgroundColor: '#D1C4E9',
       activeTintColor: '#ffffff',
       inactiveTintColor: 'gray'

@@ -15,6 +15,9 @@ const HomeStack = createStackNavigator({
 
 HomeStack.navigationOptions = {
   tabBarLabel: 'Home',
+  tabBarOptions: {
+    activeTintColor: '#00BCD4'
+  },
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
@@ -29,6 +32,9 @@ const UserStack = createStackNavigator({
 
 UserStack.navigationOptions = {
   tabBarLabel: 'Upload',
+  tabBarOptions: {
+    activeTintColor: '#00BCD4'
+  },
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
@@ -45,6 +51,9 @@ const SettingsStack = createStackNavigator({
 
 SettingsStack.navigationOptions = {
   tabBarLabel: 'Profile',
+  tabBarOptions: {
+    activeTintColor: '#00BCD4'
+  },
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
