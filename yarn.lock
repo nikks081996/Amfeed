@@ -5244,9 +5244,9 @@ merge-stream@^1.0.1:
     readable-stream "^2.0.1"
 
 merge@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/merge/-/merge-1.2.0.tgz#7531e39d4949c281a66b8c5a6e0265e8b05894da"
-  integrity sha1-dTHjnUlJwoGma4xabgJl6LBYlNo=
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/merge/-/merge-1.2.1.tgz#38bebf80c3220a8a487b6fcfb3941bb11720c145"
+  integrity sha512-VjFo4P5Whtj4vsLzsYBu5ayHhoHJ0UqNm7ibvShmbmoz7tGi0vXaoJbGdB+GmDMLUdg8DpQXEIeVDAe8MaABvQ==
 
 metro-babylon7@0.30.2:
   version "0.30.2"
@@ -6283,6 +6283,14 @@ rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
+react-addons-shallow-compare@15.6.2:
+  version "15.6.2"
+  resolved "https://registry.yarnpkg.com/react-addons-shallow-compare/-/react-addons-shallow-compare-15.6.2.tgz#198a00b91fc37623db64a28fd17b596ba362702f"
+  integrity sha1-GYoAuR/DdiPbZKKP0XtZa6NicC8=
+  dependencies:
+    fbjs "^0.8.4"
+    object-assign "^4.1.0"
+
 react-clone-referenced-element@^1.0.1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-clone-referenced-element/-/react-clone-referenced-element-1.1.0.tgz#9cdda7f2aeb54fea791f3ab8c6ab96c7a77d0158"
@@ -6344,6 +6352,11 @@ react-native-branch@2.2.5:
   version "2.2.5"
   resolved "https://registry.yarnpkg.com/react-native-branch/-/react-native-branch-2.2.5.tgz#4074dd63b4973e6397d9ce50e97b57c77a518e9d"
   integrity sha1-QHTdY7SXPmOX2c5Q6XtXx3pRjp0=
+
+react-native-carousel-pager@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/react-native-carousel-pager/-/react-native-carousel-pager-1.5.0.tgz#d1bcffbea0ad2153098c1077fa24477e8b67f12a"
+  integrity sha512-tijpGdXFA/DZHxtBTbVUxRJy+oklU4BuBE+CgrwUGDrhYsVm1nSTh6h4VBJCtMPw3gTgcXtt63PK08Os6tmA3g==
 
 react-native-debugger-open@^0.3.17:
   version "0.3.17"
@@ -6517,6 +6530,14 @@ react-native-screens@^1.0.0-alpha.11, react-native-screens@^1.0.0-alpha.5:
   dependencies:
     prop-types "^15.5.6"
 
+react-native-snap-carousel@^3.7.5:
+  version "3.8.4"
+  resolved "https://registry.yarnpkg.com/react-native-snap-carousel/-/react-native-snap-carousel-3.8.4.tgz#4c749c6a714d46ed82de527233850cb5da41bc62"
+  integrity sha512-KMxLl75Tyf12DzeTCtV7xU0KuPZQQs/2+2iM90cgxcm3lrg4+hLXff5/61ynasBkzzJ5v4bTRq5CEy/qGUJVQw==
+  dependencies:
+    prop-types "^15.6.1"
+    react-addons-shallow-compare "15.6.2"
+
 react-native-svg@6.2.2:
   version "6.2.2"
   resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-6.2.2.tgz#5803cddce374a542b4468c38a2474fca32080685"
@@ -6587,6 +6608,11 @@ react-native-vector-icons@^4.4.2:
     lodash "^4.0.0"
     prop-types "^15.5.10"
     yargs "^8.0.2"
+
+react-native-vertical-view-pager@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/react-native-vertical-view-pager/-/react-native-vertical-view-pager-0.1.1.tgz#c9ad2f3eb936219ff21cabd6d5842468a5ddbee3"
+  integrity sha512-4K3BprpWT4Gpn89YPAVoFl0k8PjsDUOVpKnOFUEYpV1TxiGQHu63Y86vzb2GH/jiQ2mSh4sw/uf2CG2N+l0Vdw==
 
 react-native-video@^2.0.0:
   version "2.3.1"
